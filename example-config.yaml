@@ -1,0 +1,6 @@
+username: your_garmin_email
+password: your_garmin_password
+#always YYYY-MM-DD or "today"
+start_date: 2022-01-01
+end_date: today
+max_heartrate: 190

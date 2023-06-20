@@ -57,7 +57,7 @@ def runs_container(df):
             ),
             dash_table.DataTable(
                 id="activity-selector-table",
-                columns=make_table(df),
+                columns=make_table(),
                 data=df.to_dict("records"),
                 page_size=30,
             ),

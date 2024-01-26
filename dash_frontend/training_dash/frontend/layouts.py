@@ -1,13 +1,10 @@
 from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
-from stravalib import Client
 
-from . import settings
-from .server import app
 from .tables import make_table
 
 
-app.layout = html.Div(
+base_layout = html.Div(
     [
         dcc.Store(id="strava-auth", storage_type="session"),
         dcc.Location(id="url", refresh=False),
@@ -31,34 +28,15 @@ app_layout = html.Div(
     ]
 )
 
-client = Client()
-strava_authorization_url = client.authorization_url(
-    client_id=settings.STRAVA_CLIENT_ID,
-    redirect_uri=settings.APP_URL,
-    state="strava-dash-app",
-)
 
-strava_login_layout = html.Div(
-    [
-        html.A(
-            html.Img(src="static/btn_strava_connectwith_orange.png"),
-            "Connect with Strava",
-            href=strava_authorization_url,
-        )
-    ]
-)
-
-
-def runs_container(df):
+def runs_container(df_records):
     return dbc.Container(
         [
-            dbc.Row(
-                id="single-activity-plots",
-            ),
+            dbc.Row(id="single-activity-plots",),
             dash_table.DataTable(
                 id="activity-selector-table",
-                columns=make_table(df),
-                data=df.to_dict("records"),
+                columns=make_table(),
+                data=df_records,
                 page_size=30,
             ),
         ]

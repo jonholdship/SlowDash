@@ -1,0 +1,26 @@
+:root {
+    --main-bg-color: #AAAAAA;
+    --white: #faf0e6; 
+	--text-heading: #110a06f4;
+  }
+
+  body {
+	background-color: var(--main-bg-color);  
+  }
+  
+  h1 {
+	  color: var(--text-heading);
+	  text-align: center;
+	  padding: 20px;
+	  font-size: : 400%
+  }
+
+.container{
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+}
+
+img{
+  width: 20%;
+}

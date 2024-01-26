@@ -1,0 +1,53 @@
+Metadata-Version: 2.1
+Name: training-dash
+Version: 0.1
+Summary: A plotly dash app for looking at Strava running data over a training period.
+Author-email: Jon Holdship <jonholdship@gmail.com>
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: dash==2.10.0
+Requires-Dist: dash_bootstrap_components==1.4.1
+Requires-Dist: numpy==1.21.5
+Requires-Dist: pandas==2.0.2
+Requires-Dist: plotly==5.6.0
+Requires-Dist: PyYAML==6.0.1
+Requires-Dist: pydantic==1.10.9
+Requires-Dist: responder==2.0.7
+Requires-Dist: SQLAlchemy==2.0.23
+Requires-Dist: stravalib==1.5
+
+# Dads Dash App
+
+A simple plotly dash webapp which logs into your Garmin Connect account, downloads your runs between some dates, and gives you a UI to interact with them.
+
+## Set Up
+
+Use pip to install the required libraries
+
+```
+pip install requirements.txt
+```
+and then use the `example-config.yaml` file to produce your own file called `config.yaml`. Fill out the details specified in the example.
+
+## Run
+
+You can run with
+
+```
+python ./run.py
+```
+and then access the app at `localhost:8050` in your browser.
+
+## To Do
+- Might need pydantic models to bridge strava downloads and sqlalchemy models.
+    - test by getting a token, then running in a notebook to download activity and write to db.
+
+- Activity streams should probably be a new table in db - needs models and a way to add it
+
+- Need to start passing db around to be used in app!
+
+- Dockers
+	- docker-compose a sqlite db and the app as containers that talk
+
+- Alembic?
+	- pretty low priority really

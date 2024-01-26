@@ -5,7 +5,7 @@ A simple plotly dash webapp which logs into your Garmin Connect account, downloa
 
 
 ## Run
-To run the code, you'll need to set up a `.env`` file. There's an example at `example.env` which is just missing the Strava client details.
+To run the code, you'll need to set up a `.env` file. There's an example at `example.env` which is just missing the Strava client details.
 
 You can then launch the app with docker
 
@@ -28,3 +28,7 @@ It is self contained with its own Dockerfile and can also be run locally using p
 
 ## To Do
 **User Preferences** - start and end dates should be added to the user table on the backend so the user can look at training over a period. We need a section in the front end to select this as well as set things like the normal HR range for the user.
+
+**Styling** - CSS isn't making it through to the dash app. Once it is working, some effort actually needs to be put in to the styling.
+
+**Consider Altair or similar** Plotly dash is a pain.

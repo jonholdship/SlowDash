@@ -42,6 +42,10 @@ def strava_auth_url():
 
 @app.get("/login")
 def user_login(access_code: str, session: Session = Depends(get_db)) -> TokenResponse:
+    """
+    Take short lived access code and exchange for token through Strava API.
+    Update the database with any activities recorded since last log in.
+    """
     athlete, token = athlete_login(access_code)
     if athlete_exists(session, athlete.id):
         # only grab activities newer than last log in
@@ -59,20 +63,30 @@ def user_login(access_code: str, session: Session = Depends(get_db)) -> TokenRes
 
 @app.get("/activities-summary")
 def activities_summary(token: str, session: Session = Depends(get_db)):
-    athlete_id = get_athlete(token)
-    print(athlete_id)
+    """
+    Returns a table of user activities.
+    """
+    try:
+        athlete_id = get_athlete(token)
+    except:
+        return HTTPException(401, "Token Expired")
     activities = get_activities(session, athlete_id=athlete_id)
-    print(activities)
     activities = activities.sort_values("start_date")
     activities["Cumulative Distance / km"] = activities["distance"].cumsum()
-    activities["Cumulative Duration / min"] = activities["moving_time"].cumsum()
+    activities["Cumulative Duration / min"] = activities["moving_time"].cumsum() / 60.0
     activities["Number of runs"] = range(1, len(activities) + 1)
     df_records = activities.to_dict("records")
-    print(df_records)
     return df_records
 
 
 @app.get("/activity")
 def get_activity(token: str, activity_id: int, session: Session = Depends(get_db)):
+    """
+    Returns the activity stream for a specific activity given an activity ID.
+    """
+    try:
+        athlete_id = get_athlete(token)
+    except:
+        return HTTPException(401, "Token Expired")
     activity_df = get_activity_stream(access_token=token, activity_id=activity_id)
     return activity_df.to_dict()

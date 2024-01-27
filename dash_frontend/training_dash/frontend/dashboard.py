@@ -6,9 +6,10 @@ from .layouts import base_layout, app_layout
 def init_dashboard(server):
     """Create a Plotly Dash dashboard."""
     dash_app = Dash(
+        __name__,
         server=server,
         routes_pathname_prefix="/dash/",
-        external_stylesheets=["static/css/styles.css",],
+        external_stylesheets=["/static/css/style.css"],
     )
     dash_app.title = "Slow Running App"
     dash_app.config.suppress_callback_exceptions = True

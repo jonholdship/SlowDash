@@ -18,7 +18,10 @@ def smooth_scatter(df, x, y, label, color="black"):
 
 def heart_rate_plot(activity_df):
     fig = px.line(
-        activity_df, x="time", y="heartrate", color_discrete_sequence=["red"],
+        activity_df,
+        x="time",
+        y="heartrate",
+        color_discrete_sequence=["red"],
     )
     fig.add_hrect(y0=160, y1=180, fillcolor="red", opacity=0.2)
     return fig
@@ -27,13 +30,16 @@ def heart_rate_plot(activity_df):
 def run_plots(activity_dict):
     activity_df = DataFrame.from_dict(activity_dict)
     return [
-        dbc.Row(html.Div("Running App")),
         dbc.Row(
             children=[
                 dbc.Col(
                     [
                         dcc.Graph(
-                            figure=px.line(activity_df, x="time", y="pace",),
+                            figure=px.line(
+                                activity_df,
+                                x="time",
+                                y="pace",
+                            ),
                             id="activity-pace-graph",
                         )
                     ],
@@ -42,7 +48,8 @@ def run_plots(activity_dict):
                 dbc.Col(
                     [
                         dcc.Graph(
-                            figure=heart_rate_plot(activity_df), id="activity-hr-graph",
+                            figure=heart_rate_plot(activity_df),
+                            id="activity-hr-graph",
                         )
                     ],
                     width=True,
@@ -63,14 +70,16 @@ def update_mini_plots(x, df_dict):
     x = X_DICT[x]
     df = DataFrame.from_records(df_dict, index=range(len(df_dict)))
     return [
-        dbc.Row(html.Div("Running App")),
         dbc.Row(
             [
                 dbc.Col(
                     [
                         dcc.Graph(
                             figure=smooth_scatter(
-                                df, x=x, y="pace", label="Average Pace min/km",
+                                df,
+                                x=x,
+                                y="pace",
+                                label="Average Pace min/km",
                             ),
                             id="pace-graph",
                         )
@@ -114,7 +123,11 @@ def update_mini_plots(x, df_dict):
                     [
                         dcc.Graph(
                             figure=smooth_scatter(
-                                df, x=x, y="calories", label="Calories", color="red",
+                                df,
+                                x=x,
+                                y="calories",
+                                label="Calories",
+                                color="red",
                             ),
                             id="vo2-graph",
                         )

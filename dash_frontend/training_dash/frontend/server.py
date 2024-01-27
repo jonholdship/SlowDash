@@ -45,3 +45,8 @@ def login_success():
     redirect_resp = flask.make_response(flask.redirect("/dash"))
     redirect_resp.set_cookie(key="strava_token", value=token)
     return redirect_resp
+
+
+@server.route("/static/<path:filepath>")
+def serve_res(filepath):
+    return flask.send_from_directory("./", filepath)

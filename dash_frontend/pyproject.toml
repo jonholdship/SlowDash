@@ -22,6 +22,7 @@ psycopg2-binary = "^2.9.9"
 pydantic = {version="1.10.9",extras =["dotenv"]}
 stravalib = "1.5"
 typesystem = "0.2.5"
+orjson = "^3.9.12"
 
 [tools.poetry.group.lint]
 optional = true

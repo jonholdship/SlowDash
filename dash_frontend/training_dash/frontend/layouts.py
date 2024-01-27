@@ -32,7 +32,9 @@ app_layout = html.Div(
 def runs_container(df_records):
     return dbc.Container(
         [
-            dbc.Row(id="single-activity-plots",),
+            dbc.Row(
+                id="single-activity-plots",
+            ),
             dash_table.DataTable(
                 id="activity-selector-table",
                 columns=make_table(),
@@ -46,10 +48,9 @@ def runs_container(df_records):
 training_container = dbc.Container(
     [
         dbc.Row(html.Div("Running App")),
-        dcc.RadioItems(
+        dcc.Dropdown(
             options=["Distance", "Duration", "Runs"],
             value="Distance",
-            inline=True,
             id="x-picker",
         ),
         html.Div(id="mini-plots"),

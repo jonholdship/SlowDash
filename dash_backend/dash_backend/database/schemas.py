@@ -1,6 +1,14 @@
-from datetime import time, datetime
+from datetime import time, datetime, timedelta
 from pydantic import BaseModel, validator, Field
 from typing import Any, Optional
+
+
+def future_date():
+    return datetime.today() + timedelta(days=36500)
+
+
+def past_date():
+    return datetime.today() - timedelta(days=90)
 
 
 class User(BaseModel):
@@ -11,6 +19,8 @@ class User(BaseModel):
     firstname: str
     lastname: str
     username: str
+    start_date: datetime = Field(default_factory=past_date)
+    end_date: datetime = Field(default_factory=future_date)
 
 
 class Activity(BaseModel):

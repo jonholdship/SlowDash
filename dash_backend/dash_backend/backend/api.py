@@ -53,9 +53,8 @@ def user_login(access_code: str, session: Session = Depends(get_db)) -> TokenRes
         latest_date = latest_date + timedelta(minutes=1)
     else:
         athlete = schemas.User.validate(athlete)
-        write_athlete(session, athlete)
-        api_config = ApiConfig()
-        latest_date = api_config.start_date
+        athlete = write_athlete(session, athlete)
+        latest_date = athlete.start_date
     activities = get_activity_summaries(token, start_date=latest_date)
     write_activities(session, activities)
     return TokenResponse(token=token)

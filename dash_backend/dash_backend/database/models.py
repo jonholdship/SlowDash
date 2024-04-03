@@ -24,6 +24,8 @@ class User(Base):
     firstname = Column(String)
     lastname = Column(String)
     username = Column(String)
+    start_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True)
     activities = relationship("Activity", back_populates="user")
 
 

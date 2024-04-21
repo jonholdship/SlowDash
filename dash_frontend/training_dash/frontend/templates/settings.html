@@ -1,0 +1,17 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
+		<title>{{title}}</title>
+	</head>
+<div>
+	<H1>{{title}}</H1>
+
+    Change the date range over which {{title}} stores your running activities.
+    <form action="/user-settings" method="POST" autocomplete="off">
+        <label for="birthday">Training start:</label>
+        <input type="date" id="start_date" name="start_date"  value={{start_date}}> 
+        <label for="birthday">Training end:</label>
+        <input type="date" id="end_date" name="end_date" value={{end_date}}> 
+        <input type="submit" value="Submit">
+    </form>
+</html>

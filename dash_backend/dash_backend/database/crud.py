@@ -1,6 +1,7 @@
 import pandas as pd
 from sqlalchemy.orm import Session
-from sqlalchemy import select, func
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import select, delete
 from . import models
 from . import schemas
 
@@ -28,18 +29,46 @@ def write_activities(db: Session, activities: list[schemas.Activity]):
     activities = [models.Activity(**activity.dict()) for activity in activities]
     db.add_all(activities)
     db.commit()
+    db.flush()
 
 
 def athlete_exists(db: Session, athlete_id: int):
     query = select(models.User.id).where(models.User.id == athlete_id)
-    user = db.execute(query).first()
+    try:
+        db.execute(query).one()
+        return True
+    except NoResultFound:
+        return False
+
+
+def delete_activities(db: Session, athlete_id: int):
+    query = delete(models.Activity).where(models.Activity.user_id == athlete_id)
+    db.execute(query)
+    db.commit()
+    db.flush()
+
+
+def get_athlete(db: Session, athlete_id: int) -> models.User:
+    df_query = select(models.User)
+    df = pd.read_sql(df_query, con=db.connection())
+    print(df)
+    query = select(models.User).where(models.User.id == athlete_id)
+    # for unknown reasons, sqlalchemy returns a tuple of (object,None)
+    user = db.execute(query).one()[0]
     return user
+
+
+def update_athlete(db: Session, athlete: models.User):
+    db.add(athlete)
+    db.commit()
+    db.flush()
 
 
 def write_athlete(db: Session, athlete: schemas.User):
     db_item = models.User(**athlete.__dict__)
     db.add(db_item)
     db.commit()
+    db.flush()
     db.refresh(db_item)
     return db_item
 

@@ -2,7 +2,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 from stravalib import Client
-
+from stravalib.model import Athlete
 
 from backend.config import ApiConfig
 
@@ -34,7 +34,7 @@ def athlete_login(access_code):
     return athlete, access_token
 
 
-def get_athlete(access_token) -> int:
+def get_athlete_id(access_token) -> int:
     client = Client(access_token=access_token)
     athlete = client.get_athlete()
     return athlete.id

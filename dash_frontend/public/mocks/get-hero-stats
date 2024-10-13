@@ -1,0 +1,11 @@
+{
+    "runs": "20",
+	"runs_change": "5",
+	"runs_trend": "up",
+	"pace":"5:10 min/km",
+	"pace_change":"50 sec/km",
+	"pace_trend":"up",
+	"distance": "100 km",
+	"distance_change":"55 km",
+	"distance_trend": "up"
+}

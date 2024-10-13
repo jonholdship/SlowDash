@@ -1,7 +1,42 @@
+# dotfiles
 .gitignore
+.editorconfig
+.env
+
+#config
 config.yaml
+prettier.config.mjs
+
+#working
 data/*
+
+#python
 __pycache__
 app/__pycache__
 
-.env
+# dependencies
+node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+out
+.next
+
+# misc
+.DS_Store
+.eslintcache
+.idea
+/.env
+/.env.local
+/.env.development.local
+/.env.test.local
+/.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

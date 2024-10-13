@@ -27,6 +27,11 @@ It is self contained with its own Dockerfile and can also be run locally using p
 
 
 ## To Do
+**Iframes** - Plan is to create two dash apps (one for each view) and include them as iframes in templates for flask. That way I can have navbars etc.
+- Need to finish splitting tabs into two independent dash apps.
+- Create templates that will use them.
+- redesign overview (hero stats and plots, all on cards)
+
 **token middleware** - Probably need to start passing token in headers and checking it in middleware.
 
 **Consider Altair or similar** Plotly dash is a pain.

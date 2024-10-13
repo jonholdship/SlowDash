@@ -23,15 +23,8 @@ after which it should be available at `localhost:5000`.
 It is self contained with its own Dockerfile and can also be run locally using poetry.
 
 ### Frontend
-`dash_frontend` is a Flask/Dash app which uses the backend to grab data and create plots of the user's training progress.
+`dash_frontend` is a  react app which uses the backend to grab data and create plots of the user's training progress.
 
 
 ## To Do
-**Iframes** - Plan is to create two dash apps (one for each view) and include them as iframes in templates for flask. That way I can have navbars etc.
-- Need to finish splitting tabs into two independent dash apps.
-- Create templates that will use them.
-- redesign overview (hero stats and plots, all on cards)
-
-**token middleware** - Probably need to start passing token in headers and checking it in middleware.
-
-**Consider Altair or similar** Plotly dash is a pain.
+**token security** - Passing a token and checking it is still valid in every route is wrong - need to find out how to properly handle the strava token in the backend.

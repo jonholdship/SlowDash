@@ -1,6 +1,6 @@
 from datetime import time, datetime, timedelta
-from pydantic import BaseModel, validator, Field
-from typing import Any, Optional
+from pydantic import BaseModel, Field, field_validator
+from typing import Any
 
 
 def future_date():
@@ -20,40 +20,40 @@ class User(BaseModel):
     lastname: str
     start_date: datetime = Field(default_factory=past_date)
     end_date: datetime = Field(default_factory=future_date)
-    username: Optional[str]
+    username: str | None
 
 
 class Activity(BaseModel):
     id: int
     user_id: int = Field(..., alias="athlete")
-    name: str
-    distance: float
-    moving_time: float
-    elapsed_time: float
-    total_elevation_gain: float
-    type: str
-    start_date: datetime
-    start_date_local: datetime
-    location_city: Optional[str]
-    location_country: str
-    kudos_count: int
-    athlete_count: int
-    gear_id: Optional[str]
-    average_speed: float
-    max_speed: float
-    splits_metric: Optional[float]
-    splits_standard: Optional[float]
-    has_heartrate: bool
-    average_heartrate: Optional[float]
-    max_heartrate: Optional[float]
-    average_cadence: Optional[float]
-    device_name: Optional[str]
-    calories: Optional[float]
-    description: Optional[str]
-    workout_type: Optional[str]
-    pace: Optional[float]
+    name: str | None
+    distance: float | None
+    moving_time: float | None
+    elapsed_time: float | None
+    total_elevation_gain: float | None
+    type: str | None
+    start_date: datetime | None
+    start_date_local: datetime | None
+    location_city: str | None
+    location_country: str | None
+    kudos_count: int | None
+    athlete_count: int | None
+    gear_id: str | None
+    average_speed: float | None
+    max_speed: float | None
+    # splits_metric: float | None
+    # splits_standard: float | None
+    has_heartrate: bool | None
+    average_heartrate: float | None
+    max_heartrate: float | None
+    average_cadence: float | None
+    device_name: str | None
+    calories: float | None
+    description: str | None
+    workout_type: str | None = Field(default="Run")
+    pace: float | None = Field(default=0.0)
 
-    @validator("type", pre=True)
+    @field_validator("type", "workout_type", mode="before")
     @classmethod
     def workout_type(cls, v) -> str:
         if isinstance(v, str):
@@ -61,13 +61,15 @@ class Activity(BaseModel):
         else:
             return str(v)
 
-    @validator("athlete", "user_id", pre=True, check_fields=False)
+    @field_validator("athlete", "user_id", mode="before", check_fields=False)
     @classmethod
     def unpack_strava_activity(cls, v) -> Any:
         if isinstance(v, int):
             return v
+        if isinstance(v, dict):
+            return v["id"]
         try:
-            return v.__dict__["id"]
+            return v.id
         except:
             raise ValueError("Fuck man.")
 

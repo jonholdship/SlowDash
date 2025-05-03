@@ -2,6 +2,7 @@ from datetime import datetime
 import pandas as pd
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import NoSuchTableError, OperationalError
 from sqlalchemy import select, delete
 from typing import Optional
 from . import models
@@ -30,7 +31,7 @@ def get_latest_activity(db: Session, athlete_id: int) -> Optional[datetime]:
 
 
 def write_activities(db: Session, activities: list[schemas.Activity]):
-    activities = [models.Activity(**activity.dict()) for activity in activities]
+    activities = [models.Activity(**activity.model_dump()) for activity in activities]
     db.add_all(activities)
     db.commit()
     db.flush()
@@ -41,7 +42,8 @@ def athlete_exists(db: Session, athlete_id: int):
     try:
         db.execute(query).one()
         return True
-    except NoResultFound:
+    except (NoResultFound, OperationalError, NoSuchTableError) as e:
+        print(e)
         return False
 
 

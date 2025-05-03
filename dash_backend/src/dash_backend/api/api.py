@@ -25,7 +25,7 @@ from dash_database.crud import (
     update_athlete,
 )
 
-from dash_database import models, schemas
+from dash_database.schemas import User
 
 app = FastAPI()
 
@@ -60,7 +60,7 @@ def user_login(access_code: str, session: Session = Depends(get_db)) -> TokenRes
         # only grab activities newer than last log in
         latest_date = get_latest_activity(session, athlete.id)
     else:
-        athlete = schemas.User.validate(athlete)
+        athlete = User.model_validate(athlete.model_dump())
         athlete = write_athlete(session, athlete)
     if not latest_date:
         latest_date = athlete.start_date

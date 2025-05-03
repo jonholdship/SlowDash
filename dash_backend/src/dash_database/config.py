@@ -1,12 +1,11 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
 
 class DbConfig(BaseSettings):
-    class Config:
-        env_prefix = "POSTGRES_"
-        case_sensitive = False
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="POSTGRES_", case_sensitive=False
+    )
 
     db: Optional[str] = None
     user: Optional[str] = None

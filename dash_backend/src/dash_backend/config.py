@@ -1,12 +1,11 @@
 from datetime import datetime
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class ApiConfig(BaseSettings):
-    class Config:
-        env_prefix = "API_"
-        case_sensitive = False
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_file="../.env", env_prefix="API_", case_sensitive=False, extra="ignore"
+    )
 
     stats_timedelta: int = 30
     start_date: datetime = datetime.fromisoformat("2023-06-02")

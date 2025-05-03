@@ -53,6 +53,7 @@ def user_login(access_code: str, session: Session = Depends(get_db)) -> TokenRes
     Update the database with any activities recorded since last log in.
     """
     logger.info("hi")
+    logger.info(access_code)
     athlete, token = athlete_login(access_code)
     logger.info(token)
     latest_date = None
@@ -133,14 +134,14 @@ def get_activity(token: str, activity_id: int, session: Session = Depends(get_db
     Returns the activity stream for a specific activity given an activity ID.
     """
     try:
-        athlete_id = get_athlete_id(token)
+        _ = get_athlete_id(token)
     except:
         return HTTPException(401, "Token Expired")
     activity_df = get_activity_stream(access_token=token, activity_id=activity_id)
     return activity_df.to_dict()
 
 
-@app.get("/run-list")
+@app.get("/runs")
 def get_runs(token: str, session: Session = Depends(get_db)):
     athlete_id = get_athlete_id(token)
     activities = get_activities(session, athlete_id=athlete_id)

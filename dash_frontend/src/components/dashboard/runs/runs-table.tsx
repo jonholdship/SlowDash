@@ -15,12 +15,12 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { getRuns } from '@/api/api_call';
 import { RunDetail } from '@/components/dashboard/runs/run-detail';
+import { authClient } from '@/lib/auth/client';
+import { ArrowsClockwise as SyncIcon } from '@phosphor-icons/react/dist/ssr/ArrowsClockwise';
+
 function noop(): void {
   // do nothing
 }
-import { ArrowsClockwise as SyncIcon } from '@phosphor-icons/react/dist/ssr/ArrowsClockwise';
-
-import { CustomersFilters } from '@/components/dashboard/runs/customers-filters';
 
 interface CustomersTableProps {
   count?: number;
@@ -30,17 +30,49 @@ interface CustomersTableProps {
   pageSetter: Function;
   runId: number;
   runSetter: Function;
-
 }
 
+// Client component wrapper for data fetching
+export default function RunsTableWrapper(): React.JSX.Element {
+  const [runId, setRun] = React.useState<number>(1);
+  const [page, setPage] = React.useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
+  const [runs, setRuns] = React.useState<Run[]>([]);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
-export default async function RunsTablePage(): Promise<React.JSX.Element> {
-	const [runId, setRun] = React.useState(1);
-  const [page, setPage] = React.useState(1);
-  const rowsPerPage = 5;
-  const runs = await getRuns();
+  // Handle sync button click - refresh data
+  const handleSync = React.useCallback(() => {
+    setIsLoading(true);
+    fetchRuns();
+  }, []);
 
-  const paginatedRuns = applyPagination(runs, page, rowsPerPage);
+  // Function to fetch runs with authentication
+  const fetchRuns = React.useCallback(async () => {
+    try {
+      const token = await authClient.getToken();
+      const runsData = await getRuns(token);
+      setRuns(runsData);
+    } catch (error) {
+      console.error("Failed to fetch runs:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Fetch data on component mount
+  React.useEffect(() => {
+    fetchRuns();
+  }, [fetchRuns]);
+
+  // Apply pagination to the runs data
+  const paginatedRuns = React.useMemo(() => {
+    return runs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  }, [runs, page, rowsPerPage]);
+
+  if (isLoading) {
+    return <div>Loading runs data...</div>;
+  }
+
   return (
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
@@ -48,12 +80,15 @@ export default async function RunsTablePage(): Promise<React.JSX.Element> {
           <Typography variant="h4">Runs</Typography>
         </Stack>
         <div>
-          <Button startIcon={<SyncIcon fontSize="var(--icon-fontSize-md)" />} variant="contained">
+          <Button 
+            startIcon={<SyncIcon fontSize="var(--icon-fontSize-md)" />} 
+            variant="contained"
+            onClick={handleSync}
+          >
             Sync
           </Button>
         </div>
       </Stack>
-      <CustomersFilters />
       <RunsTable
         count={runs.length}
         page={page}
@@ -68,12 +103,7 @@ export default async function RunsTablePage(): Promise<React.JSX.Element> {
   );
 }
 
-function applyPagination(rows: Run[], page: number, rowsPerPage: number): Run[] {
-  return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-}
-
-
-
+// Stateless component to display the runs table
 export function RunsTable({
   count = 0,
   rows,
@@ -88,14 +118,12 @@ export function RunsTable({
     return rows.map((run) => run.id);
   }, [rows]);
 
-
   return (
     <Card>
       <Box sx={{ overflowX: 'auto' }}>
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-
               <TableCell>Name</TableCell>
               <TableCell>Distance</TableCell>
               <TableCell>Pace</TableCell>

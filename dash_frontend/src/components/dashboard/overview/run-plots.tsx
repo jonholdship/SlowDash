@@ -16,21 +16,43 @@ import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/Arr
 import type { ApexOptions } from 'apexcharts';
 import { getPlots } from '@/api/api_call';
 import { Chart } from '@/components/core/chart';
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export interface PlotProps {
-  chartSeries: { seriesName: string;data:{x:any,y:number}[] }[];
+  chartSeries: { seriesName: string; data: { x: any, y: number }[] }[];
   sx?: SxProps;
 }
 
+// This is a client component that gets the auth token
+export default function RunPlotWrapper() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [plotData, setPlotData] = useState<any>(null);
 
-export default function RunPlotGrid() {
-  const [plotData, setPlotData] = useState({});
-  useEffect(()=>{
-    authClient.getToken()
-    .then(token => getPlots(token))
-    .then(plotData => setPlotData(plotData));
-  });
+  useEffect(() => {
+    const getToken = async () => {
+      const token = await authClient.getToken();
+      const plotData = await getPlots(token);
+      setPlotData(plotData);
+      setIsLoading(false);
+    };
+    
+    getToken();
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading plots...</div>;
+  }
+
+  return <RunPlotGridServer plotData={plotData} />;
+}
+
+// This is a server component that uses the token
+async function RunPlotGridServer({ plotData }: { plotData: any }) {
+  if (!plotData) {
+    return <div>Authentication required</div>;
+  }
+
+  
   return (
     <Grid container spacing={3}>
       <Grid lg={6} sm={6} xs={12}>

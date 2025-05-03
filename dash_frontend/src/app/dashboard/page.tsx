@@ -18,7 +18,9 @@ export default function Page(): React.JSX.Element {
     <Suspense>
       <HeroStats />
     </Suspense>
-    <RunPlotGrid/>
+    <Suspense>
+      <RunPlotGrid />
+    </Suspense>
     </Grid>
     </Grid>
   );

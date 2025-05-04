@@ -36,7 +36,7 @@ interface CustomersTableProps {
 export default function RunsTableWrapper(): React.JSX.Element {
   const [runId, setRun] = React.useState<number>(1);
   const [page, setPage] = React.useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState<number>(20);
   const [runs, setRuns] = React.useState<Run[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
@@ -95,6 +95,7 @@ export default function RunsTableWrapper(): React.JSX.Element {
         rows={paginatedRuns}
         rowsPerPage={rowsPerPage}
         pageSetter={setPage}
+        rowsPerPageSetter={setRowsPerPage}
         runId={runId}
         runSetter={setRun}
       />
@@ -110,6 +111,7 @@ export function RunsTable({
   page = 0,
   rowsPerPage = 0,
   pageSetter,
+  rowsPerPageSetter,
   runId,
   runSetter,
 }: CustomersTableProps): React.JSX.Element {
@@ -125,6 +127,7 @@ export function RunsTable({
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
+              <TableCell>Run Date</TableCell>
               <TableCell>Distance</TableCell>
               <TableCell>Pace</TableCell>
               <TableCell>Average HR</TableCell>
@@ -141,6 +144,7 @@ export function RunsTable({
                       <Typography variant="subtitle2">{row.name}</Typography>
                     </Stack>
                   </TableCell>
+                  <TableCell>{row.start_date}</TableCell>
                   <TableCell>{row.distance}</TableCell>
                   <TableCell>
                     {row.pace}
@@ -157,7 +161,7 @@ export function RunsTable({
         component="div"
         count={count}
         onPageChange={(event,page) => pageSetter(page)}
-        onRowsPerPageChange={noop}
+        onRowsPerPageChange={(event) => rowsPerPageSetter(event.target.value)}
         page={page}
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}

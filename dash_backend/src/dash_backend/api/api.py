@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from dash_backend.content.stats import create_training_stats
 from dash_backend.content.plots import training_summaries
-from dash_backend.models import TokenResponse, UserSettings
+from dash_backend.models import TokenResponse, UserSettings, HeroStats
 from dash_database.session import SessionLocal
 from dash_backend.strava.strava_client import (
     athlete_login,
@@ -46,14 +46,13 @@ def strava_auth_url():
     return {"strava_url": get_auth_url()}
 
 
-@app.get("/login")
+@app.get("/login", response_model=TokenResponse)
 def user_login(access_code: str, session: Session = Depends(get_db)) -> TokenResponse:
     """
     Take short lived access code and exchange for token through Strava API.
     Update the database with any activities recorded since last log in.
     """
-    logger.info("hi")
-    logger.info(access_code)
+    logger.info("logging in with access code", access_code)
     athlete, token = athlete_login(access_code)
     logger.info(token)
     latest_date = None
@@ -70,8 +69,12 @@ def user_login(access_code: str, session: Session = Depends(get_db)) -> TokenRes
     return TokenResponse(token=token)
 
 
-@app.get("/user-settings")
+@app.get("/user-settings", response_model=UserSettings)
 def get_user(token: str, session: Session = Depends(get_db)) -> UserSettings:
+    """Obtains the logged in user's settings from the database.
+
+    :return: The user's settings.
+    """
     try:
         athlete_id = get_athlete_id(token)
         logger.info(f"athlete: {athlete_id}")
@@ -88,6 +91,11 @@ def get_user(token: str, session: Session = Depends(get_db)) -> UserSettings:
 def set_user(
     user_settings: UserSettings, token: str, session: Session = Depends(get_db)
 ):
+    """Updates the logged in user's settings in the database.
+
+    :param user_settings: An instance of UserSettings containing the user's ID, start date, and end date.
+    """
+
     logger.info(user_settings)
     athlete = get_athlete(session, user_settings.athlete_id)
     athlete.start_date = user_settings.start_date
@@ -103,7 +111,10 @@ def set_user(
 
 
 @app.get("/hero-stats")
-def get_hero_stats(token: str, session: Session = Depends(get_db)):
+def get_hero_stats(token: str, session: Session = Depends(get_db)) -> HeroStats:
+    """Get summary statistics for the logged in user. Showing
+    how their last four weeks of training compares to the previous four weeks.
+    """
     athlete_id = get_athlete_id(token)
     activities = get_activities(session, athlete_id=athlete_id)
     hero_stats = create_training_stats(activities=activities)
@@ -120,7 +131,7 @@ def activities_summary(token: str, session: Session = Depends(get_db)):
     except:
         return HTTPException(401, "Token Expired")
     activities = get_activities(session, athlete_id=athlete_id)
-    activities = activities.sort_values("start_date")
+    activities = activities.sort_values("start_date", ascending=False)
     activities["Cumulative Distance / km"] = activities["distance"].cumsum()
     activities["Cumulative Duration / min"] = activities["moving_time"].cumsum() / 60.0
     activities["Number of runs"] = range(1, len(activities) + 1)
@@ -145,7 +156,9 @@ def get_activity(token: str, activity_id: int, session: Session = Depends(get_db
 def get_runs(token: str, session: Session = Depends(get_db)):
     athlete_id = get_athlete_id(token)
     activities = get_activities(session, athlete_id=athlete_id)
-    activities = activities[["id", "name", "distance", "pace", "average_heartrate"]]
+    activities = activities[
+        ["id", "name", "start_date", "distance", "pace", "average_heartrate"]
+    ]
     activities["pace"] = activities["pace"].map(pace_to_string)
     return activities.to_dict(orient="records")
 

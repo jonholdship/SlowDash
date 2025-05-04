@@ -24,11 +24,12 @@ fastapi = "^0.115.2"
 uvicorn = "^0.27.0"
 pydantic-settings = "^2.9.1"
 
-[tools.poetry.group.lint]
+[tool.poetry.group.dev]
 optional = true
 
 
-[tools.poetry.group.lint.dependencies]
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.1.1"
 black = "^23.12.1"
 flake8 = "^7.0.0"
 isort = "^5.13.2"

@@ -10,6 +10,7 @@ def training_summaries(activities: pd.DataFrame) -> dict:
     :return: dictionary for plotting
     """
     plots = {}
+    activities = activities.sort_values("start_date", ascending=True)
     activities["x"] = activities["start_date"]
     activities["y"] = activities["pace"]
     plots["pace_plot"] = activities[["x", "y"]].to_dict(orient="records")

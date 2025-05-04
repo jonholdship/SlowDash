@@ -1,53 +1,39 @@
-from datetime import datetime, timedelta
 import logging
+import numpy as np
 import pandas as pd
 
-from dash_backend.config import ApiConfig
 from dash_backend.strava.strava_utils import pace_to_string
+from dash_backend.models import HeroStats
 
 logger = logging.getLogger("uvicorn")
 
 
-def pace_stats(
-    this_period: pd.DataFrame, last_period: pd.DataFrame
-) -> tuple[str, str, str]:
-    new_pace = this_period["pace"].dropna().mean()
-    old_pace = last_period["pace"].dropna().mean()
-    if pd.isna(new_pace):
-        new_pace = 0.0
-    if pd.isna(old_pace):
-        old_pace = 0.0
-    logger.info(new_pace, old_pace)
-    pace_str = pace_to_string(new_pace)
-    pace_change = pace_to_string(new_pace - old_pace)
-    pace_trend = "up" if new_pace >= old_pace else "down"
-    return pace_str, pace_change, pace_trend
-
-
 def create_training_stats(activities: pd.DataFrame):
-    period_start = datetime.today() - timedelta(days=ApiConfig().stats_timedelta)
-    comparison = period_start - timedelta(days=ApiConfig().stats_timedelta)
-    this_period = activities[activities["start_date"] > period_start]
-    last_period = activities[
-        (activities["start_date"] <= period_start)
-        & (activities["start_date"] > comparison)
-    ]
-    pace, pace_change, pace_trend = pace_stats(
-        this_period=this_period, last_period=last_period
-    )
+    summary = (
+        activities.groupby(pd.Grouper(key="start_date_local", freq="4W"))
+        .agg({"distance": "sum", "pace": "mean", "id": "count"})
+        .fillna(0.0)
+    ).reset_index()
 
-    return {
-        "runs": f"{len(this_period)}",
-        "runs_change": f"{len(this_period)-len(last_period)}",
-        "runs_trend": "up" if len(this_period) >= len(last_period) else "down",
-        "pace": pace,
-        "pace_change": pace_change,
-        "pace_trend": pace_trend,
-        "distance": f"{this_period['distance'].sum()/1000:.1f} km",
-        "distance_change": f"{(this_period['distance'].sum()-last_period['distance'].sum())/1000:.1f} km",
+    stats_dict = {
+        "runs": f"{summary.iloc[-1]["id"]}",
+        "runs_change": f"{np.abs(summary.iloc[-1]["id"] - summary.iloc[-2]["id"])}",
+        "runs_trend": (
+            "up" if summary.iloc[-1]["id"] > summary.iloc[-2]["id"] else "down"
+        ),
+        "pace": pace_to_string(summary.iloc[-1]["pace"]),
+        "pace_change": pace_to_string(
+            np.abs(summary.iloc[-1]["pace"] - summary.iloc[-2]["pace"])
+        ),
+        "pace_trend": (
+            "up" if summary.iloc[-1]["pace"] < summary.iloc[-2]["pace"] else "down"
+        ),
+        "distance": f"{summary.iloc[-1]["distance"]:.1} km",
+        "distance_change": f"{np.abs(summary.iloc[-1]["distance"] - summary.iloc[-2]["distance"]):.1f} km",
         "distance_trend": (
             "up"
-            if this_period["distance"].sum() >= last_period["distance"].sum()
+            if summary.iloc[-1]["distance"] > summary.iloc[-2]["distance"]
             else "down"
         ),
     }
+    return HeroStats.model_validate(stats_dict)

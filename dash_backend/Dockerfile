@@ -1,4 +1,4 @@
-FROM bitnami/python:3.9 as builder
+FROM bitnami/python:3.12 as builder
 
 WORKDIR /code
 
@@ -15,7 +15,7 @@ COPY poetry.lock pyproject.toml ./
 RUN poetry install --only main --no-root \
 	&& rm -rf ${POETRY_CACHE_DIR}
 
-FROM bitnami/python:3.9 as runner
+FROM bitnami/python:3.12 as runner
 
 WORKDIR /code
 

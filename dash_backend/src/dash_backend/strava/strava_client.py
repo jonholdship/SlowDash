@@ -54,7 +54,6 @@ def get_activity_summaries(
             if detailed_activity is None:
                 continue
             activity = Activity.model_validate(detailed_activity.model_dump())
-            activity.pace = 1000.0 / (60 * activity.average_speed)
             activities.append(activity)
     return activities
 

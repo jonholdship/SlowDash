@@ -1,6 +1,8 @@
 from datetime import time, datetime, timedelta
-from pydantic import BaseModel, Field, field_validator
-from typing import Any
+from pydantic import BaseModel, Field, field_validator, model_validator
+from typing import Any, Self
+from stravalib import unit_helper
+from stravalib.model import RelaxedActivityType
 
 
 def future_date():
@@ -39,10 +41,8 @@ class Activity(BaseModel):
     kudos_count: int | None
     athlete_count: int | None
     gear_id: str | None
-    average_speed: float | None
-    max_speed: float | None
-    # splits_metric: float | None
-    # splits_standard: float | None
+    average_speed: float | None  # m/s
+    max_speed: float | None  # m/s
     has_heartrate: bool | None
     average_heartrate: float | None
     max_heartrate: float | None
@@ -50,20 +50,23 @@ class Activity(BaseModel):
     device_name: str | None
     calories: float | None
     description: str | None
-    workout_type: str | None = Field(default="Run")
-    pace: float | None = Field(default=0.0)
+    pace: float | None = Field(default=None)  # min/km
 
-    @field_validator("type", "workout_type", mode="before")
-    @classmethod
-    def workout_type(cls, v) -> str:
+    @field_validator("distance", mode="before")
+    def distance_to_km(distance) -> float:
+        return unit_helper.kilometers(distance).magnitude
+
+    @field_validator("type", mode="before")
+    def workout_type(v) -> str:
         if isinstance(v, str):
             return v
+        elif isinstance(v, RelaxedActivityType):
+            return v.root
         else:
             return str(v)
 
     @field_validator("athlete", "user_id", mode="before", check_fields=False)
-    @classmethod
-    def unpack_strava_activity(cls, v) -> Any:
+    def unpack_strava_activity(v) -> Any:
         if isinstance(v, int):
             return v
         if isinstance(v, dict):
@@ -72,6 +75,12 @@ class Activity(BaseModel):
             return v.id
         except:
             raise ValueError("Fuck man.")
+
+    @model_validator(mode="after")
+    def check_pace(self) -> Self:
+        if (not self.pace) and (self.average_speed):
+            self.pace = 1.0 / (self.average_speed * 60 / 1000.0)
+        return self
 
 
 class ActivityStream(BaseModel):

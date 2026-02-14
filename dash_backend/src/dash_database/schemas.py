@@ -10,7 +10,7 @@ def future_date():
 
 
 def past_date():
-    return datetime.today() - timedelta(days=90)
+    return datetime.today() - timedelta(days=365)
 
 
 class User(BaseModel):

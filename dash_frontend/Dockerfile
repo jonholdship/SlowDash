@@ -1,27 +1,31 @@
-FROM bitnami/python:3.9 as builder
+FROM node:22-alpine AS builder
 
-WORKDIR /code
+WORKDIR /app
 
-ENV POETRY_VERSION=1.4.2 \
-	POETRY_NO_INTERACTION=1 \
-	POETRY_VIRTUALENVS_IN_PROJECT=1 \
-	POETRY_VIRTUALENVS_CREATE=1 \
-	POETRY_CACHE_DIR=/tmp/poetry_cache
+# Build argument for backend API base URL (used at build time by Next.js)
+ARG NEXT_PUBLIC_API_BASE_URL=http://backend:8000/
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 
-RUN pip install --only main --no-cache-dir "poetry==${POETRY_VERSION}"
+# Install deps
+COPY package.json package-lock.json* pnpm-lock.yaml* ./
+RUN npm install --legacy-peer-deps
 
-COPY poetry.lock pyproject.toml ./
+# Copy source and build
+COPY . .
+RUN npm run build
 
-RUN poetry install --only main --no-root \
-	&& rm -rf ${POETRY_CACHE_DIR}
+FROM node:22-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
 
-FROM bitnami/python:3.9 as runner
+# Copy production node_modules
+COPY package.json ./
+RUN npm install --production --legacy-peer-deps
 
-WORKDIR /code
+# Copy built assets
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
 
-COPY --from=builder /code /code
-
-COPY training_dash /code
-ENV PATH="/code/.venv/bin:$PATH"
-
-CMD ["python","-m","frontend"]
+EXPOSE 3000
+CMD ["npx", "next", "start", "-p", "3000"]

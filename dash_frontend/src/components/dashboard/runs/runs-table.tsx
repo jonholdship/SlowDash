@@ -13,7 +13,7 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { getRuns } from '@/api/api_call';
+import { getRuns } from '@/api/api-call';
 import { RunDetail } from '@/components/dashboard/runs/run-detail';
 import { authClient } from '@/lib/auth/client';
 import { ArrowsClockwise as SyncIcon } from '@phosphor-icons/react/dist/ssr/ArrowsClockwise';
@@ -28,6 +28,7 @@ interface CustomersTableProps {
   page?: number;
   rowsPerPage?: number;
   pageSetter: Function;
+  rowsPerPageSetter: Function;
   runId: number;
   runSetter: Function;
 }

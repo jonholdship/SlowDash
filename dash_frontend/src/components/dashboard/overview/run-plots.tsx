@@ -14,7 +14,7 @@ import { authClient } from '@/lib/auth/client';
 import { ArrowClockwise as ArrowClockwiseIcon } from '@phosphor-icons/react/dist/ssr/ArrowClockwise';
 import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
 import type { ApexOptions } from 'apexcharts';
-import { getPlots } from '@/api/api_call';
+import { getPlots } from '@/api/api-call';
 import { Chart } from '@/components/core/chart';
 import { useEffect, useState } from 'react';
 

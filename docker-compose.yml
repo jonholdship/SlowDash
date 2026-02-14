@@ -5,7 +5,7 @@ services:
     env_file:
       - .env
     volumes:
-      - db:/var/lib/postgresql/data
+      - db:/var/lib/postgresql
     ports:
       - 5432:5432
   pgadmin:
@@ -18,26 +18,30 @@ services:
       - database
     volumes:
       - pgadmin-data:/var/lib/pgadmin
-  # backend:
-  #   image: 'backend'
-  #   build:
-  #     context: ./dash_backend
-  #     dockerfile: ./Dockerfile
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - database
-  #   ports:
-  #     - 8000:8000
-  # frontend:
-  #   image: 'frontend'
-  #   build:
-  #     context: ./dash_frontend
-  #     dockerfile: ./Dockerfile
-  #   env_file:
-  #     - .env
-  #   ports:
-  #     - 5000:5000
+  backend:
+    image: 'backend'
+    build:
+      context: ./dash_backend
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - database
+    ports:
+      - 8000:8000
+  frontend:
+    image: 'frontend'
+    build:
+      context: ./dash_frontend
+      dockerfile: ./Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: "http://backend:8000/"
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    ports:
+      - 3000:3000
 
 volumes:
   db:

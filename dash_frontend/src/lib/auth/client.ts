@@ -1,7 +1,7 @@
 'use client';
 
 import type { User } from '@/types/user';
-import { getTokenFromCode } from '@/api/api_call';
+import { getTokenFromCode } from '@/api/api-call';
 import { BehaviorSubject } from 'rxjs';
 
 // Define Session interface

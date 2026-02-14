@@ -13,7 +13,7 @@ import { ArrowUp as ArrowUpIcon } from '@phosphor-icons/react/dist/ssr/ArrowUp';
 import {Path as DistIcon} from '@phosphor-icons/react/dist/ssr/Path';
 import {PersonSimpleRun as RunIcon} from '@phosphor-icons/react/dist/ssr/PersonSimpleRun';
 import {SneakerMove as PaceIcon} from '@phosphor-icons/react/dist/ssr/SneakerMove';
-import { getStats } from '@/api/api_call'; 
+import { getStats } from '@/api/api-call'; 
 import Grid from '@mui/material/Unstable_Grid2';
 import { Overview } from '@/types/overview';
 

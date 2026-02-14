@@ -1,4 +1,4 @@
-FROM bitnami/python:3.12 as builder
+FROM python:3.12-slim as builder
 
 WORKDIR /code
 
@@ -10,18 +10,19 @@ ENV POETRY_VERSION=1.4.2 \
 
 RUN pip install --only main --no-cache-dir "poetry==${POETRY_VERSION}"
 
-COPY poetry.lock pyproject.toml ./
+COPY poetry.lock pyproject.toml README.md ./
+COPY src /code/src
 
-RUN poetry install --only main --no-root \
+RUN poetry install --only main \
 	&& rm -rf ${POETRY_CACHE_DIR}
 
-FROM bitnami/python:3.12 as runner
+FROM python:3.12-slim as runner
 
 WORKDIR /code
 
 COPY --from=builder /code /code
 
-COPY dash_backend /code
+COPY src /code
 ENV PATH="/code/.venv/bin:$PATH"
 
-CMD ["python","-m","backend"]
+CMD ["python","-m","dash_backend"]

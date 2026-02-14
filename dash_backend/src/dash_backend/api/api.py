@@ -1,3 +1,4 @@
+import token
 from fastapi import Depends, FastAPI, HTTPException
 import logging
 from sqlalchemy.orm import Session
@@ -95,14 +96,14 @@ def set_user(
 
     :param user_settings: An instance of UserSettings containing the user's ID, start date, and end date.
     """
-
+    athlete_id = get_athlete_id(token)
     logger.info(user_settings)
-    athlete = get_athlete(session, user_settings.athlete_id)
+    athlete = get_athlete(session, athlete_id)
     athlete.start_date = user_settings.start_date
     athlete.end_date = user_settings.end_date
     update_athlete(session, athlete)
     logger.info(athlete.end_date)
-    delete_activities(session, user_settings.athlete_id)
+    delete_activities(session, athlete_id)
     activities = get_activity_summaries(
         token, start_date=athlete.start_date, end_date=athlete.end_date
     )

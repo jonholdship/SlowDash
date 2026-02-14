@@ -59,3 +59,26 @@ export async function getPlots(token: string | null): Promise<Plots> {
 export async function getRuns(token: string | null): Promise<Run[]> {
 	return apiRequest<Run[]>('runs', token);
 }
+
+export async function setUserSettings(
+	userSettings: {start_date: string; end_date?: string | null },
+	token: string | null
+): Promise<void> {
+	if (!token) throw new Error('No authentication token available');
+
+	const base = ensureApiBaseUrl();
+	const url = new URL('user-settings', base);
+	url.searchParams.append('token', token);
+
+	const response = await fetch(url.toString(), {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(userSettings),
+	});
+
+	if (!response.ok) {
+		throw new Error(`Update settings failed: ${response.statusText}`);
+	}
+
+	return;
+}

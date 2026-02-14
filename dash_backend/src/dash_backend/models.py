@@ -13,7 +13,6 @@ class UserSettings(BaseModel):
             datetime: lambda v: v.date().isoformat(),
         }
 
-    athlete_id: int
     start_date: datetime
     end_date: Optional[datetime]
 

@@ -5,7 +5,7 @@ from stravalib import Client
 from stravalib.model import DetailedAthlete
 from stravalib.protocol import AccessInfo
 from dash_backend.config import ApiConfig
-
+from dash_backend.models import AuthenticatedUser
 from dash_database.schemas import Activity
 
 
@@ -19,10 +19,10 @@ def get_auth_url() -> str:
     )
 
 
-def athlete_login(access_code) -> tuple[DetailedAthlete, AccessInfo]:
+def athlete_login(access_code) -> tuple[DetailedAthlete, AuthenticatedUser]:
     client = Client()
     api_config = ApiConfig()
-    token_info: AccessInfo = client.exchange_code_for_token(
+    token_info = client.exchange_code_for_token(
         client_id=api_config.strava_client_id,
         client_secret=api_config.strava_client_secret,
         code=access_code,
@@ -35,14 +35,20 @@ def athlete_login(access_code) -> tuple[DetailedAthlete, AccessInfo]:
     )
 
     athlete = client.get_athlete()
-    return athlete, token_info
+    user = AuthenticatedUser(
+        access_token=token_info["access_token"],
+        refresh_token=token_info["refresh_token"],
+        expires_at=token_info["expires_at"],
+        athlete_id=athlete.id,
+    )
+    return athlete, user
 
 
 def _get_client(token_info: AccessInfo) -> Client:
     return Client(
-        access_token=token_info["access_token"],
-        token_expires=token_info["expires_at"],
-        refresh_token=token_info["refresh_token"],
+        access_token=token_info.access_token,
+        token_expires=token_info.expires_at,
+        refresh_token=token_info.refresh_token,
     )
 
 
@@ -53,12 +59,12 @@ def get_athlete_id(token_info: AccessInfo) -> int:
 
 
 def get_activity_summaries(
-    token_info: AccessInfo,
+    user: AuthenticatedUser,
     start_date: datetime,
     end_date: datetime | None = None,
     activity_type: str = "Run",
 ) -> list[Activity]:
-    client = _get_client(token_info)
+    client = _get_client(user)
 
     if end_date is None:
         end_date = datetime.today()
@@ -73,8 +79,8 @@ def get_activity_summaries(
     return activities
 
 
-def get_activity_stream(token_info: AccessInfo, activity_id):
-    client = _get_client(token_info)
+def get_activity_stream(user: AuthenticatedUser, activity_id):
+    client = _get_client(user)
     activity_df = pd.DataFrame()
     for header, stream in client.get_activity_streams(
         str(activity_id),

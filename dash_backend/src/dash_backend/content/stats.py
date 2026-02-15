@@ -28,7 +28,7 @@ def create_training_stats(activities: pd.DataFrame):
         "pace_trend": (
             "up" if summary.iloc[-1]["pace"] < summary.iloc[-2]["pace"] else "down"
         ),
-        "distance": f"{summary.iloc[-1]["distance"]:.1} km",
+        "distance": f"{summary.iloc[-1]["distance"]:.1f} km",
         "distance_change": f"{np.abs(summary.iloc[-1]["distance"] - summary.iloc[-2]["distance"]):.1f} km",
         "distance_trend": (
             "up"

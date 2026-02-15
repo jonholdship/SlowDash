@@ -23,7 +23,12 @@ export async function apiRequest<T>(
 	url.searchParams.append('token', tokenValue);
 
 
-	const response = await fetch(url);
+	const response = await fetch(url, { 
+    method: 'GET', 
+    headers: new Headers({
+        'Authorization': `Bearer ${tokenValue}`,
+    	})
+	});
 
 	if (!response.ok) {
 		throw new Error(`API request failed: ${response.statusText}`);

@@ -9,6 +9,10 @@ class TokenResponse(BaseModel):
     expires_at: int
 
 
+class AuthenticatedUser(TokenResponse):
+    athlete_id: int
+
+
 class UserSettings(BaseModel):
     class Config:
         json_encoders = {

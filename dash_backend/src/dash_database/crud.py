@@ -32,7 +32,8 @@ def get_latest_activity(db: Session, athlete_id: int) -> Optional[datetime]:
 
 def write_activities(db: Session, activities: list[schemas.Activity]):
     activities = [models.Activity(**activity.model_dump()) for activity in activities]
-    db.add_all(activities)
+    for activity in activities:
+        db.merge(activity)
     db.commit()
     db.flush()
 

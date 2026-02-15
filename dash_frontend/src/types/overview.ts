@@ -5,7 +5,7 @@ export interface Overview {
 	pace: string;
 	pace_change:string;
 	pace_trend:'up' | 'down';
-	distance: string;
+	distance: number;
 	distance_change:string;
 	distance_trend:'up'|'down';
   }

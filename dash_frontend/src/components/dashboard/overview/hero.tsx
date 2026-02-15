@@ -70,7 +70,7 @@ export async function HeroStatsServer({ overview }: { overview: Overview | null 
           <HeroStat statName="Pace" diff={overview?.pace_change} trend={overview?.pace_trend} sx={{ height: '100%' }} value={overview?.pace} icon={paceIcon} />
         </Grid>
         <Grid lg={4} sm={6} xs={12}>
-          <HeroStat statName="Distance" diff={overview?.distance_change} trend={overview?.distance_trend} sx={{ height: '100%' }} value={overview?.distance} icon={distIcon} />
+          <HeroStat statName="Distance" diff={overview?.distance_change} trend={overview?.distance_trend} sx={{ height: '100%' }} value={overview?.distance.toFixed(1)} icon={distIcon} />
         </Grid>
       </Grid>
     );

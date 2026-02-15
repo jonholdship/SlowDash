@@ -1,6 +1,7 @@
 import json
 from fastapi import Depends, FastAPI, HTTPException
 import logging
+import numpy as np
 from sqlalchemy.orm import Session
 from urllib.parse import unquote
 
@@ -172,6 +173,7 @@ def get_runs(token: str, session: Session = Depends(get_db)):
         ["id", "name", "start_date", "distance", "pace", "average_heartrate"]
     ]
     activities["pace"] = activities["pace"].map(pace_to_string)
+    activities["start_date"] = activities["start_date"].values.astype(np.int64) // 10**9
     return activities.to_dict(orient="records")
 
 

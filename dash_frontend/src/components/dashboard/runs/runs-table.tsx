@@ -18,9 +18,6 @@ import { RunDetail } from '@/components/dashboard/runs/run-detail';
 import { authClient } from '@/lib/auth/client';
 import { ArrowsClockwise as SyncIcon } from '@phosphor-icons/react/dist/ssr/ArrowsClockwise';
 
-function noop(): void {
-  // do nothing
-}
 
 interface CustomersTableProps {
   count?: number;
@@ -37,7 +34,7 @@ interface CustomersTableProps {
 export default function RunsTableWrapper(): React.JSX.Element {
   const [runId, setRun] = React.useState<number>(1);
   const [page, setPage] = React.useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState<number>(20);
+  const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
   const [runs, setRuns] = React.useState<Run[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
@@ -129,6 +126,7 @@ export function RunsTable({
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell>Run Date</TableCell>
+              <TableCell>Run Time</TableCell>
               <TableCell>Distance</TableCell>
               <TableCell>Pace</TableCell>
               <TableCell>Average HR</TableCell>
@@ -145,8 +143,10 @@ export function RunsTable({
                       <Typography variant="subtitle2">{row.name}</Typography>
                     </Stack>
                   </TableCell>
-                  <TableCell>{row.start_date}</TableCell>
-                  <TableCell>{row.distance}</TableCell>
+                  <TableCell>{row.start_date.toDateString()}</TableCell>
+                  <TableCell>{row.start_date.toTimeString().split(' ')[0]}</TableCell>
+
+                  <TableCell>{row.distance.toFixed(1)}</TableCell>
                   <TableCell>
                     {row.pace}
                   </TableCell>

@@ -110,6 +110,7 @@ function useChartOptions(): ApexOptions {
     stroke: { colors: [theme.palette.primary.main], show: true, width: 2 },
     theme: { mode: theme.palette.mode },
     xaxis: {
+      type: 'datetime',
       axisBorder: { color: theme.palette.divider, show: true },
       axisTicks: { color: theme.palette.divider, show: true },
       labels: { offsetY: 5, style: { colors: theme.palette.text.secondary } },
@@ -119,6 +120,7 @@ function useChartOptions(): ApexOptions {
         offsetX: -10,
         style: { colors: theme.palette.text.secondary },
       },
+      decimalsInFloat: 1,
     },
   };
 }

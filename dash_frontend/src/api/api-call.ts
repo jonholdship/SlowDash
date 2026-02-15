@@ -54,7 +54,23 @@ export async function getPlots(token: AccessInfo | null): Promise<Plots> {
 }
 
 export async function getRuns(token: AccessInfo | null): Promise<Run[]> {
-	return apiRequest<Run[]>('runs', token);
+	const data = await apiRequest<Run[]>('runs', token);
+	// Normalize start_date to JS Date objects (backend may return epoch seconds)
+	const normalized = (data as unknown as Array<Record<string, unknown>>).map((r) => {
+		const sd = (r.start_date as unknown) as number | string | undefined;
+		let dateVal: Date | undefined;
+		if (typeof sd === 'number') {
+			// backend returns epoch seconds
+			dateVal = new Date(sd * 1000);
+		} else if (typeof sd === 'string') {
+			dateVal = new Date(sd);
+		}
+		return {
+			...(r as object),
+			start_date: dateVal,
+		} as unknown as Run;
+	});
+	return normalized;
 }
 
 export async function setUserSettings(

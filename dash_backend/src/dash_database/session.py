@@ -19,10 +19,13 @@ def new_engine() -> Engine:
     return create_engine(url)
 
 
+def create_tables():
+    engine = new_engine()
+    engine.connect()
+    models.Base.metadata.drop_all(bind=engine)
+    models.Base.metadata.create_all(bind=engine)
+
+
 engine = new_engine()
 engine.connect()
-
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-models.Base.metadata.drop_all(bind=engine)
-models.Base.metadata.create_all(bind=engine)
-print("Database tables created successfully.")

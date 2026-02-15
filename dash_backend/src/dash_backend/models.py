@@ -4,7 +4,9 @@ from typing import Optional
 
 
 class TokenResponse(BaseModel):
-    token: str
+    access_token: str
+    refresh_token: str
+    expires_at: int
 
 
 class UserSettings(BaseModel):

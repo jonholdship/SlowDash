@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from stravalib import Client
 from stravalib.model import DetailedAthlete
-
+from stravalib.protocol import AccessInfo
 from dash_backend.config import ApiConfig
 
 from dash_database.schemas import Activity
@@ -19,31 +19,46 @@ def get_auth_url() -> str:
     )
 
 
-def athlete_login(access_code) -> tuple[DetailedAthlete, str]:
+def athlete_login(access_code) -> tuple[DetailedAthlete, AccessInfo]:
     client = Client()
     api_config = ApiConfig()
-    response = client.exchange_code_for_token(
+    token_info: AccessInfo = client.exchange_code_for_token(
         client_id=api_config.strava_client_id,
         client_secret=api_config.strava_client_secret,
         code=access_code,
     )
-    access_token = response["access_token"]
-    client = Client(access_token=access_token)
+    # response is the AccessInfo mapping: contains access_token, refresh_token, expires_at
+    client = Client(
+        access_token=token_info["access_token"],
+        token_expires=token_info["expires_at"],
+        refresh_token=token_info["refresh_token"],
+    )
 
     athlete = client.get_athlete()
-    return athlete, access_token
+    return athlete, token_info
 
 
-def get_athlete_id(access_token) -> int:
-    client = Client(access_token=access_token)
+def _get_client(token_info: AccessInfo) -> Client:
+    return Client(
+        access_token=token_info["access_token"],
+        token_expires=token_info["expires_at"],
+        refresh_token=token_info["refresh_token"],
+    )
+
+
+def get_athlete_id(token_info: AccessInfo) -> int:
+    client = _get_client(token_info)
     athlete = client.get_athlete()
     return athlete.id
 
 
 def get_activity_summaries(
-    access_token, start_date, end_date=None, activity_type="Run"
+    token_info: AccessInfo,
+    start_date: datetime,
+    end_date: datetime | None = None,
+    activity_type: str = "Run",
 ) -> list[Activity]:
-    client = Client(access_token=access_token)
+    client = _get_client(token_info)
 
     if end_date is None:
         end_date = datetime.today()
@@ -58,8 +73,8 @@ def get_activity_summaries(
     return activities
 
 
-def get_activity_stream(access_token, activity_id):
-    client = Client(access_token=access_token)
+def get_activity_stream(token_info: AccessInfo, activity_id):
+    client = _get_client(token_info)
     activity_df = pd.DataFrame()
     for header, stream in client.get_activity_streams(
         str(activity_id),

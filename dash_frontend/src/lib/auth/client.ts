@@ -1,7 +1,7 @@
 'use client';
 
 import type { User } from '@/types/user';
-import { getTokenFromCode } from '@/api/api-call';
+import { getTokenFromCode, type AccessInfo } from '@/api/api-call';
 import { BehaviorSubject } from 'rxjs';
 
 // Define Session interface
@@ -96,13 +96,13 @@ class AuthClient {
       if (!code) {
         return { error: 'No authorization code provided' };
       }
-      const tokenResponse = await getTokenFromCode(code);
-      
-      // Assuming getTokenFromCode returns at minimum an access token
-      // and potentially refresh_token, expires_in, etc.
+      const tokenResponse: AccessInfo = await getTokenFromCode(code);
+
       const session: Session = {
-        accessToken: tokenResponse,
-        expiresAt: Date.now() + 3600 * 1000, // Assuming token is valid for 1 hour
+        accessToken: tokenResponse.access_token,
+        refreshToken: tokenResponse.refresh_token,
+        // tokenResponse.expires_at is epoch seconds per Strava; fall back to 1 hour
+        expiresAt: tokenResponse.expires_at ?? Math.floor(Date.now() / 1000) + 3600,
       };
 
       this.saveSession(session);
@@ -146,9 +146,9 @@ class AuthClient {
     };
   }
 
-  async getToken(): Promise<string | null> {
+  async getToken(): Promise<AccessInfo | null> {
     const session = this.session$.value;
-    return session?.accessToken || null;
+    return session ? { access_token: session.accessToken, refresh_token: session.refreshToken, expires_at: session.expiresAt } : null;
   }
 
   async signOut(): Promise<{ error?: string }> {

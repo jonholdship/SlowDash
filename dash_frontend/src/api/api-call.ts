@@ -12,21 +12,16 @@ function ensureApiBaseUrl(): string {
 
 export async function apiRequest<T>(
 	endpoint: string,
-	token: string | null,
+	token: string | Record<string, unknown> | null,
 	//options: RequestInit = {}
 ): Promise<T> {
 	if (!token) throw new Error('No authentication token available');
 
 	const base = ensureApiBaseUrl();
 	const url = new URL(endpoint, base);
-	url.searchParams.append('token', token);
+	const tokenValue = JSON.stringify(token);
+	url.searchParams.append('token', tokenValue);
 
-	// const mergedOptions: RequestInit = {
-	// 	...options,
-	// 	headers: {
-	// 		...(options.headers as Record<string, string> | undefined),
-	// 	},
-	// };
 
 	const response = await fetch(url);
 
@@ -38,37 +33,40 @@ export async function apiRequest<T>(
 	return body as T;
 }
 
-export async function getTokenFromCode(code: string): Promise<string> {
+export type AccessInfo = { access_token: string; refresh_token?: string; expires_at?: number };
+
+export async function getTokenFromCode(code: string): Promise<AccessInfo> {
 	const base = ensureApiBaseUrl();
 	const endpoint = new URL('login', base);
 	endpoint.searchParams.append('access_code', code);
 	const response = await fetch(endpoint.toString());
 	if (!response.ok) throw new Error(`Login request failed: ${response.statusText}`);
-	const data = (await response.json()) as { token: string };
-	return data.token;
+	const data = (await response.json()) as AccessInfo;
+	return data;
 }
 
-export async function getStats(token: string | null): Promise<Overview> {
+export async function getStats(token: AccessInfo  | null): Promise<Overview> {
 	return apiRequest<Overview>('hero-stats', token);
 }
 
-export async function getPlots(token: string | null): Promise<Plots> {
+export async function getPlots(token: AccessInfo | null): Promise<Plots> {
 	return apiRequest<Plots>('summary-plots', token);
 }
 
-export async function getRuns(token: string | null): Promise<Run[]> {
+export async function getRuns(token: AccessInfo | null): Promise<Run[]> {
 	return apiRequest<Run[]>('runs', token);
 }
 
 export async function setUserSettings(
 	userSettings: {start_date: string; end_date?: string | null },
-	token: string | null
+	token: AccessInfo | null
 ): Promise<void> {
 	if (!token) throw new Error('No authentication token available');
 
 	const base = ensureApiBaseUrl();
 	const url = new URL('user-settings', base);
-	url.searchParams.append('token', token);
+	const tokenValue = JSON.stringify(token);
+	url.searchParams.append('token', tokenValue);
 
 	const response = await fetch(url.toString(), {
 		method: 'POST',

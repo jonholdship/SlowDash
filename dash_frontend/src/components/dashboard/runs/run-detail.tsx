@@ -11,8 +11,9 @@ import type { SxProps } from '@mui/material/styles';
 import type { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
 import Box from '@mui/material/Box';
-import { AuthError, getActivity, type ActivityResponse } from '@/api/api-call';
+import { AuthError, getActivity } from '@/api/api-call';
 import { Chart } from '@/components/core/chart';
+import type { ActivityResponse } from '@/types/activity';
 
 const ActivityMap = dynamic<{ polyline: string | null }>(
   () => import('./activity-map').then((m) => m.ActivityMap),

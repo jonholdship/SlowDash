@@ -2,28 +2,8 @@
 import type { Overview } from '@/types/overview';
 import type { Plots } from '@/types/plots';
 import type { Run } from '@/types/run';
+import type { ActivityResponse } from '@/types/activity';
 
-export interface ActivityDetail {
-	name: string | null;
-	polyline: string | null;
-	description: string;
-	start_date: string | null;
-	calories: number | null;
-}
-
-export interface ActivityStreams {
-	time?: number[];
-	distance?: number[];
-	heartrate?: number[];
-	pace?: number[];
-	altitude?: number[];
-	[key: string]: number[] | undefined;
-}
-
-export interface ActivityResponse {
-	activity: ActivityDetail;
-	streams: ActivityStreams;
-}
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 

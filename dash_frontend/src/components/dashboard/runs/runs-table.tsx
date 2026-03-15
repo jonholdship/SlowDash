@@ -25,13 +25,13 @@ interface CustomersTableProps {
   rowsPerPage?: number;
   pageSetter: Function;
   rowsPerPageSetter: Function;
-  runId: number;
+  runId: number | null;
   runSetter: Function;
 }
 
 // Client component wrapper for data fetching
 export default function RunsTableWrapper(): React.JSX.Element {
-  const [runId, setRun] = React.useState<number>(1);
+  const [runId, setRun] = React.useState<number | null>(null);
   const [page, setPage] = React.useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
   const [runs, setRuns] = React.useState<Run[]>([]);

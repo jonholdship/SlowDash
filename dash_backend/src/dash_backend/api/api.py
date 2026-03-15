@@ -21,6 +21,7 @@ from dash_backend.strava.strava_client import (
     athlete_login,
     get_athlete_id,
     get_activity_summaries,
+    get_activity_details,
     get_activity_stream,
     get_auth_url,
 )
@@ -220,13 +221,17 @@ def activities_summary(
 def get_activity(
     user: Annotated[AuthenticatedUser, Depends(get_current_user)],
     activity_id: int,
-    session: Session = Depends(get_db),
 ):
     """
-    Returns the activity stream for a specific activity given an activity ID.
+    Returns activity details (name, polyline, description, start_date, calories)
+    and activity streams (time, distance, heartrate, pace, altitude, etc.) for a given activity ID.
     """
+    details = get_activity_details(user=user, activity_id=activity_id)
     activity_df = get_activity_stream(user=user, activity_id=activity_id)
-    return activity_df.to_dict()
+    return {
+        "activity": details,
+        "streams": activity_df.to_dict("list"),
+    }
 
 
 @app.get("/runs")
@@ -235,6 +240,7 @@ def get_runs(
     session: Session = Depends(get_db),
 ):
     activities = get_activities(session, athlete_id=user.athlete_id)
+    activities = activities.sort_values("start_date", ascending=False)
     activities = activities[
         ["id", "name", "start_date", "distance", "pace", "average_heartrate"]
     ]

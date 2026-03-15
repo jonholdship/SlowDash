@@ -19,7 +19,7 @@ def get_auth_url() -> str:
     )
 
 
-def athlete_login(access_code) -> tuple[DetailedAthlete, AuthenticatedUser]:
+def athlete_login(access_code: str) -> tuple[DetailedAthlete, AuthenticatedUser]:
     client = Client()
     api_config = ApiConfig()
     token_info = client.exchange_code_for_token(
@@ -44,7 +44,7 @@ def athlete_login(access_code) -> tuple[DetailedAthlete, AuthenticatedUser]:
     return athlete, user
 
 
-def _get_client(token_info: AccessInfo) -> Client:
+def _get_client(token_info: AccessInfo | AuthenticatedUser) -> Client:
     return Client(
         access_token=token_info.access_token,
         token_expires=token_info.expires_at,

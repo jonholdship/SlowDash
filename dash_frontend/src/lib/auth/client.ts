@@ -16,7 +16,7 @@ export interface SignInWithOAuthParams {
 class AuthClient {
   private async callMe(): Promise<User | null> {
     const base = ensureApiBaseUrl();
-    const url = new URL('me', base);
+    const url = new URL('user/me', base);
     const response = await fetch(url.toString(), {
       method: 'GET',
       credentials: 'include',
@@ -44,7 +44,7 @@ class AuthClient {
       }
 
       const base = ensureApiBaseUrl();
-      const endpoint = new URL('login', base);
+      const endpoint = new URL('user/login', base);
       endpoint.searchParams.append('access_code', code);
 
       const response = await fetch(endpoint.toString(), {
@@ -77,7 +77,7 @@ class AuthClient {
   async signOut(): Promise<{ error?: string }> {
     try {
       const base = ensureApiBaseUrl();
-      const url = new URL('logout', base);
+      const url = new URL('user/logout', base);
       const response = await fetch(url.toString(), {
         method: 'POST',
         credentials: 'include',

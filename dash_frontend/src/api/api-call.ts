@@ -43,20 +43,20 @@ export async function apiRequest<T>(
 }
 
 export async function getStats(): Promise<Overview> {
-	return apiRequest<Overview>('hero-stats');
+	return apiRequest<Overview>('activities/hero-stats');
 }
 
 export async function getPlots(): Promise<Plots> {
-	return apiRequest<Plots>('summary-plots');
+	return apiRequest<Plots>('activities/summary-plots');
 }
 
 export async function getActivity(activityId: number): Promise<ActivityResponse> {
-	const endpoint = `activity?activity_id=${encodeURIComponent(activityId)}`;
+	const endpoint = `activities/activity?activity_id=${encodeURIComponent(activityId)}`;
 	return apiRequest<ActivityResponse>(endpoint);
 }
 
 export async function getRuns(): Promise<Run[]> {
-	const data = await apiRequest<Run[]>('runs');
+	const data = await apiRequest<Run[]>('activities/runs');
 	// Normalize start_date to JS Date objects (backend may return epoch seconds)
 	const normalized = (data as unknown as Array<Record<string, unknown>>).map((r) => {
 		const sd = (r.start_date as unknown) as number | string | undefined;
@@ -79,7 +79,7 @@ export async function setUserSettings(
 	userSettings: {start_date: string; end_date?: string | null },
 ): Promise<void> {
 	const base = ensureApiBaseUrl();
-	const url = new URL('user-settings', base);
+	const url = new URL('user/user-settings', base);
 
 	const response = await fetch(url.toString(), {
 		method: 'POST',

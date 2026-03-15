@@ -44,7 +44,6 @@ def athlete_exists(db: Session, athlete_id: int):
         db.execute(query).one()
         return True
     except (NoResultFound, OperationalError, NoSuchTableError) as e:
-        print(e)
         return False
 
 
@@ -58,7 +57,6 @@ def delete_activities(db: Session, athlete_id: int):
 def get_athlete(db: Session, athlete_id: int) -> models.User:
     df_query = select(models.User)
     df = pd.read_sql(df_query, con=db.connection())
-    print(df)
     query = select(models.User).where(models.User.id == athlete_id)
     # for unknown reasons, sqlalchemy returns a tuple of (object,None)
     user = db.execute(query).one()[0]
@@ -72,7 +70,7 @@ def update_athlete(db: Session, athlete: models.User):
 
 
 def write_athlete(db: Session, athlete: schemas.User):
-    db_item = models.User(**athlete.__dict__)
+    db_item = models.User(**athlete.model_dump())
     db.add(db_item)
     db.commit()
     db.flush()

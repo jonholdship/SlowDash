@@ -15,7 +15,6 @@ def new_engine() -> Engine:
         port=db_config.port,
         password=db_config.password,
     )
-    print("url", url)
     return create_engine(url)
 
 

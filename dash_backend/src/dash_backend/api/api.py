@@ -38,13 +38,14 @@ from dash_database.crud import (
 
 from dash_database.schemas import User
 from dash_backend.auth_jwt import create_access_token
+from dash_backend.config import ApiConfig
 
 app = FastAPI()
 
 # CORS settings: allow frontend (with cookies) to call the API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[ApiConfig().frontend_url],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

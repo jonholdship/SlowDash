@@ -79,19 +79,49 @@ def get_activity_summaries(
     return activities
 
 
+def get_activity_details(user: AuthenticatedUser, activity_id: int) -> dict:
+    """Fetch detailed activity from Strava: name, polyline, description, start_date, calories."""
+    client = _get_client(user)
+    activity = client.get_activity(activity_id)
+    if activity is None:
+        return {}
+    polyline = None
+    if activity.map is not None:
+        polyline = getattr(activity.map, "summary_polyline", None) or getattr(
+            activity.map, "polyline", None
+        )
+    start_date = activity.start_date.isoformat() if activity.start_date else None
+    return {
+        "name": activity.name,
+        "polyline": polyline,
+        "description": activity.description or "",
+        "start_date": start_date,
+        "calories": getattr(activity, "calories", None),
+    }
+
+
 def get_activity_stream(user: AuthenticatedUser, activity_id):
     client = _get_client(user)
+    stream_types = [
+        "time",
+        "distance",
+        "heartrate",
+        "cadence",
+        "velocity_smooth",
+        "altitude",
+    ]
     activity_df = pd.DataFrame()
-    for header, stream in client.get_activity_streams(
-        str(activity_id),
-        types=["time", "distance", "heartrate", "cadence", "velocity_smooth"],
-    ).items():
+    streams = client.get_activity_streams(str(activity_id), types=stream_types)
+    if streams is None:
+        return activity_df
+    for header, stream in streams.items():
         activity_df[header] = stream.data
 
     # low speed => incredibly high pace. Let's just clip it to 0 pace.
-    activity_df["pace"] = np.where(
-        activity_df["velocity_smooth"] > 0.5,
-        1000.0 / (activity_df["velocity_smooth"] * 60),
-        0,
-    )
+    if "velocity_smooth" in activity_df.columns:
+        activity_df["pace"] = np.where(
+            activity_df["velocity_smooth"] > 0.5,
+            1000.0 / (activity_df["velocity_smooth"] * 60),
+            0,
+        )
     return activity_df

@@ -2,6 +2,8 @@
 import type { Overview } from '@/types/overview';
 import type { Plots } from '@/types/plots';
 import type { Run } from '@/types/run';
+import type { ActivityResponse } from '@/types/activity';
+
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
@@ -46,6 +48,11 @@ export async function getStats(): Promise<Overview> {
 
 export async function getPlots(): Promise<Plots> {
 	return apiRequest<Plots>('summary-plots');
+}
+
+export async function getActivity(activityId: number): Promise<ActivityResponse> {
+	const endpoint = `activity?activity_id=${encodeURIComponent(activityId)}`;
+	return apiRequest<ActivityResponse>(endpoint);
 }
 
 export async function getRuns(): Promise<Run[]> {

@@ -23,6 +23,7 @@ typesystem = "0.2.5"
 fastapi = "^0.115.2"
 uvicorn = "^0.27.0"
 pydantic-settings = "^2.9.1"
+pyjwt = "^2.12.1"
 
 [tool.poetry.group.dev]
 optional = true

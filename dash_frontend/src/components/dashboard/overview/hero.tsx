@@ -1,6 +1,5 @@
 'use client';
 import * as React from 'react';
-import { authClient } from '@/lib/auth/client';
 import Avatar from '@mui/material/Avatar';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -13,7 +12,7 @@ import { ArrowUp as ArrowUpIcon } from '@phosphor-icons/react/dist/ssr/ArrowUp';
 import {Path as DistIcon} from '@phosphor-icons/react/dist/ssr/Path';
 import {PersonSimpleRun as RunIcon} from '@phosphor-icons/react/dist/ssr/PersonSimpleRun';
 import {SneakerMove as PaceIcon} from '@phosphor-icons/react/dist/ssr/SneakerMove';
-import { getStats } from '@/api/api-call'; 
+import { AuthError, getStats } from '@/api/api-call'; 
 import Grid from '@mui/material/Unstable_Grid2';
 import { Overview } from '@/types/overview';
 
@@ -31,14 +30,23 @@ export default function HeroStatsWrapper() {
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
-    const getToken = async () => {
-      const token = await authClient.getToken();
-      const overviewData = await getStats(token);
-      setOverview(overviewData);
-      setIsLoading(false);
+    const loadStats = async () => {
+      try {
+        const overviewData = await getStats();
+        setOverview(overviewData);
+      } catch (err) {
+        if (err instanceof AuthError) {
+          setOverview(null);
+          return;
+        }
+        console.error('Failed to load hero stats', err);
+        setOverview(null);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    
-    getToken();
+
+    loadStats();
   }, []);
 
   if (isLoading) {

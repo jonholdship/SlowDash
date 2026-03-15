@@ -1,5 +1,6 @@
 import json
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Response
+from fastapi.middleware.cors import CORSMiddleware
 import logging
 import numpy as np
 from sqlalchemy.orm import Session
@@ -36,8 +37,18 @@ from dash_database.crud import (
 )
 
 from dash_database.schemas import User
+from dash_backend.auth_jwt import create_access_token
 
 app = FastAPI()
+
+# CORS settings: allow frontend (with cookies) to call the API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 logger = logging.getLogger("uvicorn")
 
@@ -57,7 +68,11 @@ def strava_auth_url():
 
 
 @app.get("/login", response_model=TokenResponse)
-def user_login(access_code: str, session: Session = Depends(get_db)) -> TokenResponse:
+def user_login(
+    access_code: str,
+    response: Response,
+    session: Session = Depends(get_db),
+) -> TokenResponse:
     """
     Take short lived access code and exchange for token through Strava API.
     Update the database with any activities recorded since last log in.
@@ -76,11 +91,57 @@ def user_login(access_code: str, session: Session = Depends(get_db)) -> TokenRes
     activities = get_activity_summaries(user=user, start_date=last_retrieved_date)
     write_activities(session, activities)
     logger.info("logged in successfully")
+
+    # Issue JWT and set it as an httpOnly cookie
+    jwt_payload = {
+        "access_token": user.access_token,
+        "refresh_token": user.refresh_token,
+        "expires_at": user.expires_at,
+        "athlete_id": athlete.id,
+    }
+    jwt_token = create_access_token(jwt_payload)
+
+    # Note: in production, set secure=True and tune samesite
+    response.set_cookie(
+        key="auth_token",
+        value=jwt_token,
+        httponly=True,
+        samesite="lax",
+    )
+
     return TokenResponse(
         access_token=user.access_token,
         refresh_token=user.refresh_token,
         expires_at=user.expires_at,
     )
+
+
+@app.get("/me")
+def get_me(
+    user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+) -> dict:
+    """
+    Return minimal information about the currently authenticated user.
+    """
+    return {
+        "athlete_id": user.athlete_id,
+    }
+
+
+@app.post("/logout")
+def logout(response: Response) -> dict:
+    """
+    Clear the JWT auth cookie, effectively logging the user out.
+    """
+    response.set_cookie(
+        key="auth_token",
+        value="",
+        max_age=0,
+        expires=0,
+        httponly=True,
+        samesite="lax",
+    )
+    return {"detail": "Logged out"}
 
 
 @app.get("/user-settings", response_model=UserSettings)

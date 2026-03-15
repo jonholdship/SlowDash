@@ -16,3 +16,8 @@ class ApiConfig(BaseSettings):
     database_port: int
     port: int
     redirect_url: str
+
+    # JWT configuration
+    jwt_secret: str
+    jwt_algorithm: str = "HS256"
+    jwt_expires_hours: int = 24

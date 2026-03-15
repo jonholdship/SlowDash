@@ -1,20 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
-import Divider from '@mui/material/Divider';
 import { alpha, useTheme } from '@mui/material/styles';
 import type { SxProps } from '@mui/material/styles';
 import Grid from '@mui/material/Unstable_Grid2';
-import { authClient } from '@/lib/auth/client';
-import { ArrowClockwise as ArrowClockwiseIcon } from '@phosphor-icons/react/dist/ssr/ArrowClockwise';
-import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
 import type { ApexOptions } from 'apexcharts';
-import { getPlots } from '@/api/api-call';
+import { AuthError, getPlots } from '@/api/api-call';
 import { Chart } from '@/components/core/chart';
 import { useEffect, useState } from 'react';
 
@@ -29,14 +23,24 @@ export default function RunPlotWrapper() {
   const [plotData, setPlotData] = useState<any>(null);
 
   useEffect(() => {
-    const getToken = async () => {
-      const token = await authClient.getToken();
-      const plotData = await getPlots(token);
-      setPlotData(plotData);
-      setIsLoading(false);
+    const loadPlots = async () => {
+      try {
+        const plots = await getPlots();
+        setPlotData(plots);
+      } catch (err) {
+        if (err instanceof AuthError) {
+          // Treat as unauthenticated – server component will show an auth message
+          setPlotData(null);
+          return;
+        }
+        console.error('Failed to load plots', err);
+        setPlotData(null);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    
-    getToken();
+
+    loadPlots();
   }, []);
 
   if (isLoading) {
@@ -71,22 +75,11 @@ function RunPlot({ chartSeries, sx }: PlotProps): React.JSX.Element {
    return (
     <Card sx={sx}>
       <CardHeader
-        action={
-          <Button color="inherit" size="small" startIcon={<ArrowClockwiseIcon fontSize="var(--icon-fontSize-md)" />}>
-            Sync
-          </Button>
-        }
         title={chartSeries[0].seriesName}
       />
       <CardContent>
-        <Chart height={350} options={chartOptions} series={chartSeries} type="line" width="100%" />
+        <Chart height={400} options={chartOptions} series={chartSeries} type="line" width="100%" />
       </CardContent>
-      <Divider />
-      <CardActions sx={{ justifyContent: 'flex-end' }}>
-        <Button color="inherit" endIcon={<ArrowRightIcon fontSize="var(--icon-fontSize-md)" />} size="small">
-          Overview
-        </Button>
-      </CardActions>
     </Card>
   );
 }

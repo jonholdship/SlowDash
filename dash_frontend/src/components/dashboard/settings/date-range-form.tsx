@@ -10,7 +10,6 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Unstable_Grid2';
-import { authClient } from '@/lib/auth/client';
 import { setUserSettings } from '@/api/api-call';
 
 export function DateRangeForm(): React.JSX.Element {
@@ -22,12 +21,8 @@ export function DateRangeForm(): React.JSX.Element {
     e.preventDefault();
     setLoading(true);
     try {
-      const token = await authClient.getToken();
-      if (!token) throw new Error('Not authenticated');
-
       await setUserSettings(
         {start_date: startDate, end_date: endDate || null },
-        token
       );
 
       // Minimal feedback

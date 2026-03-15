@@ -14,5 +14,10 @@ class ApiConfig(BaseSettings):
     strava_client_id: str
     strava_client_secret: str
     database_port: int
-    port: int
+    port: int  
     redirect_url: str
+    frontend_url: str
+    # JWT configuration
+    jwt_secret: str
+    jwt_algorithm: str = "HS256"
+    jwt_expires_hours: int = 24

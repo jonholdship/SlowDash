@@ -13,9 +13,8 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { getRuns } from '@/api/api-call';
+import { AuthError, getRuns } from '@/api/api-call';
 import { RunDetail } from '@/components/dashboard/runs/run-detail';
-import { authClient } from '@/lib/auth/client';
 import { ArrowsClockwise as SyncIcon } from '@phosphor-icons/react/dist/ssr/ArrowsClockwise';
 
 
@@ -47,10 +46,13 @@ export default function RunsTableWrapper(): React.JSX.Element {
   // Function to fetch runs with authentication
   const fetchRuns = React.useCallback(async () => {
     try {
-      const token = await authClient.getToken();
-      const runsData = await getRuns(token);
+      const runsData = await getRuns();
       setRuns(runsData);
     } catch (error) {
+      if (error instanceof AuthError) {
+        setRuns([]);
+        return;
+      }
       console.error("Failed to fetch runs:", error);
     } finally {
       setIsLoading(false);

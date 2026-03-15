@@ -1,4 +1,4 @@
-'use server';
+'use strict';
 import type { Overview } from '@/types/overview';
 import type { Plots } from '@/types/plots';
 import type { Run } from '@/types/run';
@@ -10,25 +10,27 @@ function ensureApiBaseUrl(): string {
 	return API_BASE_URL.endsWith('/') ? API_BASE_URL : API_BASE_URL + '/';
 }
 
+export class AuthError extends Error {
+	constructor(message = 'Unauthenticated') {
+		super(message);
+		this.name = 'AuthError';
+	}
+}
+
 export async function apiRequest<T>(
 	endpoint: string,
-	token: string | Record<string, unknown> | null,
 	//options: RequestInit = {}
 ): Promise<T> {
-	if (!token) throw new Error('No authentication token available');
-
 	const base = ensureApiBaseUrl();
 	const url = new URL(endpoint, base);
-	const tokenValue = JSON.stringify(token);
-	url.searchParams.append('token', tokenValue);
-
-
-	const response = await fetch(url, { 
-    method: 'GET', 
-    headers: new Headers({
-        'Authorization': `Bearer ${tokenValue}`,
-    	})
+	const response = await fetch(url, {
+		method: 'GET',
+		credentials: 'include',
 	});
+
+	if (response.status === 401) {
+		throw new AuthError();
+	}
 
 	if (!response.ok) {
 		throw new Error(`API request failed: ${response.statusText}`);
@@ -38,28 +40,16 @@ export async function apiRequest<T>(
 	return body as T;
 }
 
-export type AccessInfo = { access_token: string; refresh_token?: string; expires_at?: number };
-
-export async function getTokenFromCode(code: string): Promise<AccessInfo> {
-	const base = ensureApiBaseUrl();
-	const endpoint = new URL('login', base);
-	endpoint.searchParams.append('access_code', code);
-	const response = await fetch(endpoint.toString());
-	if (!response.ok) throw new Error(`Login request failed: ${response.statusText}`);
-	const data = (await response.json()) as AccessInfo;
-	return data;
+export async function getStats(): Promise<Overview> {
+	return apiRequest<Overview>('hero-stats');
 }
 
-export async function getStats(token: AccessInfo  | null): Promise<Overview> {
-	return apiRequest<Overview>('hero-stats', token);
+export async function getPlots(): Promise<Plots> {
+	return apiRequest<Plots>('summary-plots');
 }
 
-export async function getPlots(token: AccessInfo | null): Promise<Plots> {
-	return apiRequest<Plots>('summary-plots', token);
-}
-
-export async function getRuns(token: AccessInfo | null): Promise<Run[]> {
-	const data = await apiRequest<Run[]>('runs', token);
+export async function getRuns(): Promise<Run[]> {
+	const data = await apiRequest<Run[]>('runs');
 	// Normalize start_date to JS Date objects (backend may return epoch seconds)
 	const normalized = (data as unknown as Array<Record<string, unknown>>).map((r) => {
 		const sd = (r.start_date as unknown) as number | string | undefined;
@@ -80,17 +70,13 @@ export async function getRuns(token: AccessInfo | null): Promise<Run[]> {
 
 export async function setUserSettings(
 	userSettings: {start_date: string; end_date?: string | null },
-	token: AccessInfo | null
 ): Promise<void> {
-	if (!token) throw new Error('No authentication token available');
-
 	const base = ensureApiBaseUrl();
 	const url = new URL('user-settings', base);
-	const tokenValue = JSON.stringify(token);
-	url.searchParams.append('token', tokenValue);
 
 	const response = await fetch(url.toString(), {
 		method: 'POST',
+		credentials: 'include',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(userSettings),
 	});

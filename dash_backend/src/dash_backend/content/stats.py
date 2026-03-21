@@ -7,10 +7,9 @@ from dash_backend.models import HeroStats
 
 logger = logging.getLogger("uvicorn")
 
-
 def create_training_stats(activities: pd.DataFrame):
     summary = (
-        activities.groupby(pd.Grouper(key="start_date_local", freq="4W",convention="end"))
+        activities.groupby(pd.Grouper(key="start_date_local", freq="28D",origin="end",label="left"))
         .agg({"distance": "sum", "pace": "mean", "id": "count"})
         .fillna(0.0)
     ).reset_index()

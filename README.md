@@ -27,6 +27,3 @@ It is self contained with its own Dockerfile and can also be run locally using p
 
 `dash_frontend` is a react app which uses the backend to grab data and create plots of the user's training progress.
 
-## To Do
-
-**token security** - Passing a token and checking it is still valid in every route is wrong - need to find out how to properly handle the strava token in the backend.

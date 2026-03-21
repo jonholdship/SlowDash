@@ -59,11 +59,11 @@ async function RunPlotGridServer({ plotData }: { plotData: any }) {
   
   return (
     <Grid container spacing={3}>
-      <Grid lg={6} sm={6} xs={12}>
-        <RunPlot chartSeries={[{seriesName:"Pace",data:plotData.pace_plot}]}/>
+      <Grid lg={12} xl={6} xs={12}>
+        <RunPlot chartSeries={[{ seriesName: 'Pace', data: plotData.pace_plot }]} />
       </Grid>
-      <Grid lg={6} sm={6} xs={12}>
-        <RunPlot chartSeries={[{seriesName:"HR",data:plotData.hr_plot}]}/>
+      <Grid lg={12} xl={6} xs={12}>
+        <RunPlot chartSeries={[{ seriesName: 'HR', data: plotData.hr_plot }]} />
       </Grid>
     </Grid>
   );
@@ -71,14 +71,11 @@ async function RunPlotGridServer({ plotData }: { plotData: any }) {
 
 function RunPlot({ chartSeries, sx }: PlotProps): React.JSX.Element {
   const chartOptions = useChartOptions();
-  console.log({chartSeries});
-   return (
-    <Card sx={sx}>
-      <CardHeader
-        title={chartSeries[0].seriesName}
-      />
-      <CardContent>
-        <Chart height={400} options={chartOptions} series={chartSeries} type="line" width="100%" />
+  return (
+    <Card sx={{ overflow: 'visible', ...sx }}>
+      <CardHeader title={chartSeries[0].seriesName} />
+      <CardContent sx={{ overflow: 'visible', '&:last-child': { paddingBottom: '20px' } }}>
+        <Chart height={420} options={chartOptions} series={chartSeries} type="line" width="100%" />
       </CardContent>
     </Card>
   );
@@ -88,12 +85,18 @@ function useChartOptions(): ApexOptions {
   const theme = useTheme();
 
   return {
-    chart: { background: 'transparent', stacked: false, toolbar: { show: false } },
+    chart: {
+      background: 'transparent',
+      redrawOnParentResize: true,
+      stacked: false,
+      toolbar: { show: false },
+    },
     colors: [theme.palette.primary.main, alpha(theme.palette.primary.main, 0.25)],
     dataLabels: { enabled: false },
     fill: { opacity: 1, type: 'solid' },
     grid: {
       borderColor: theme.palette.divider,
+      padding: { bottom: 28, left: 8, right: 16, top: 8 },
       strokeDashArray: 2,
       xaxis: { lines: { show: false } },
       yaxis: { lines: { show: true } },

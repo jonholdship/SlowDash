@@ -44,6 +44,23 @@ def athlete_login(access_code: str) -> tuple[DetailedAthlete, AuthenticatedUser]
     return athlete, user
 
 
+def refresh_strava_tokens(user: AuthenticatedUser) -> AuthenticatedUser:
+    """Exchange the Strava refresh token for new access and refresh tokens."""
+    api_config = ApiConfig()
+    client = Client()
+    token_info = client.refresh_access_token(
+        client_id=api_config.strava_client_id,
+        client_secret=api_config.strava_client_secret,
+        refresh_token=user.refresh_token,
+    )
+    return AuthenticatedUser(
+        access_token=token_info["access_token"],
+        refresh_token=token_info["refresh_token"],
+        expires_at=token_info["expires_at"],
+        athlete_id=user.athlete_id,
+    )
+
+
 def _get_client(token_info: AccessInfo | AuthenticatedUser) -> Client:
     return Client(
         access_token=token_info.access_token,

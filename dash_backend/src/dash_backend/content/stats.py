@@ -10,7 +10,7 @@ logger = logging.getLogger("uvicorn")
 
 def create_training_stats(activities: pd.DataFrame):
     summary = (
-        activities.groupby(pd.Grouper(key="start_date_local", freq="4W"))
+        activities.groupby(pd.Grouper(key="start_date_local", freq="4W",convention="end"))
         .agg({"distance": "sum", "pace": "mean", "id": "count"})
         .fillna(0.0)
     ).reset_index()

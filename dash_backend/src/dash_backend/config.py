@@ -11,7 +11,7 @@ class ApiConfig(BaseSettings):
     start_date: datetime = datetime.fromisoformat("2023-06-02")
     end_date: datetime = datetime.today()
     max_heartrate: int = 190
-    strava_client_id: str
+    strava_client_id: int
     strava_client_secret: str
     database_port: int
     port: int  
@@ -20,4 +20,5 @@ class ApiConfig(BaseSettings):
     # JWT configuration
     jwt_secret: str
     jwt_algorithm: str = "HS256"
-    jwt_expires_hours: int = 24
+    # Long app-session cookie; Strava refresh/revocation controls real re-login.
+    jwt_expires_hours: int = 24 * 365 * 30

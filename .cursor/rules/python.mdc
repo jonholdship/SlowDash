@@ -1,0 +1,29 @@
+---
+description: Python 3.12 typing and simplicity (YAGNI)
+globs: **/*.py
+alwaysApply: false
+---
+
+# Python
+
+## Type hints (3.12 style)
+
+Use built-in generics and modern syntax. Do **not** import capitalized aliases from `typing` for containers.
+
+```python
+# ❌ Avoid
+from typing import Dict, List, Optional, Tuple
+def f(x: Dict[str, int]) -> List[str]: ...
+
+# ✅ Prefer
+def f(x: dict[str, int]) -> list[str]: ...
+```
+
+- Use `X | None` instead of `Optional[X]` when you need `typing` only for that, prefer avoiding `Optional` import.
+- Use `collections.abc` for abstract types in signatures when you need them (`Sequence`, `Mapping`, `Iterable`), not concrete `list`/`dict` when any sequence/mapping is fine.
+
+## Simplicity (YAGNI)
+
+- Solve the current problem with the smallest change that fits existing patterns.
+- Do not add abstraction layers, config knobs, or features “for later” unless the user asked for them.
+- Prefer one clear function or module over premature factories, registries, or protocol-heavy designs.

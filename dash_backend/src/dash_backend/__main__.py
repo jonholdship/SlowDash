@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # CORS settings: allow frontend (with cookies) to call the API
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[config.frontend_url],
+        allow_origins=[config.frontend_url,config.frontend_url+"/"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

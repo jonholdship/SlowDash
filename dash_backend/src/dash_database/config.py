@@ -4,7 +4,7 @@ from typing import Optional
 
 class DbConfig(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env", env_prefix="POSTGRES_", case_sensitive=False
+        env_file=".env", env_prefix="POSTGRES_", case_sensitive=False, extra="ignore"
     )
 
     db: Optional[str] = None

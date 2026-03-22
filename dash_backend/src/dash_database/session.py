@@ -5,9 +5,9 @@ from dash_database import models
 from dash_database.config import DbConfig
 
 
-def new_engine() -> Engine:
+def get_engine_url() -> URL:
     db_config = DbConfig()
-    url = URL.create(
+    return URL.create(
         drivername=db_config.driver,
         username=db_config.user,
         host=db_config.host,
@@ -15,14 +15,10 @@ def new_engine() -> Engine:
         port=db_config.port,
         password=db_config.password,
     )
-    return create_engine(url)
 
 
-def create_tables():
-    engine = new_engine()
-    engine.connect()
-    models.Base.metadata.drop_all(bind=engine)
-    models.Base.metadata.create_all(bind=engine)
+def new_engine() -> Engine:
+    return create_engine(get_engine_url())
 
 
 engine = new_engine()

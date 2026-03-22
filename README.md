@@ -1,6 +1,6 @@
-# Dads Dash App
+# SlowDash
 
-A simple plotly dash webapp which logs into your Garmin Connect account, downloads your runs between some dates, and gives you a UI to interact with them.
+A simple web app which allows users to log in with their Strava account and view stats and details.
 
 ## Run
 
@@ -13,7 +13,7 @@ docker-compose build --parallel
 docker-compose up
 ```
 
-after which it should be available at `localhost:5000`.
+after which it should be available at `localhost:3000`.
 
 ## Code
 
@@ -26,4 +26,3 @@ It is self contained with its own Dockerfile and can also be run locally using p
 ### Frontend
 
 `dash_frontend` is a react app which uses the backend to grab data and create plots of the user's training progress.
-

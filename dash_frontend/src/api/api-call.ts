@@ -3,6 +3,8 @@ import type { Overview } from '@/types/overview';
 import type { Plots } from '@/types/plots';
 import type { Run } from '@/types/run';
 import type { ActivityResponse } from '@/types/activity';
+import type { HrZonesResponse } from '@/types/hr-zones';
+import type { UserSettings, UserSettingsUpdate } from '@/types/user-settings';
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
@@ -55,6 +57,14 @@ export async function getActivity(activityId: number): Promise<ActivityResponse>
 	return apiRequest<ActivityResponse>(endpoint);
 }
 
+export async function getUserSettings(): Promise<UserSettings> {
+	return apiRequest<UserSettings>('user/user-settings');
+}
+
+export async function getHrZones(): Promise<HrZonesResponse> {
+	return apiRequest<HrZonesResponse>('user/hr-zones');
+}
+
 export async function getRuns(): Promise<Run[]> {
 	const data = await apiRequest<Run[]>('activities/runs');
 	// Normalize start_date to JS Date objects (backend may return epoch seconds)
@@ -75,9 +85,7 @@ export async function getRuns(): Promise<Run[]> {
 	return normalized;
 }
 
-export async function setUserSettings(
-	userSettings: {start_date: string; end_date?: string | null },
-): Promise<void> {
+export async function setUserSettings(userSettings: UserSettingsUpdate): Promise<void> {
 	const base = ensureApiBaseUrl();
 	const url = new URL('user/user-settings', base);
 

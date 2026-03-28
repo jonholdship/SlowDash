@@ -1,11 +1,14 @@
 import logging
+from datetime import date, datetime
 from typing import Annotated
 
-from fastapi import BackgroundTasks, Depends, Response, APIRouter 
+from fastapi import BackgroundTasks, Depends, Response, APIRouter
 from sqlalchemy.orm import Session
 
 from dash_backend.api.auth import get_current_user, set_auth_cookie
-from dash_backend.models import AuthenticatedUser, UserSettings
+from dash_backend.config import ApiConfig
+from dash_backend.content.hr_zones import HrZonesPayload, build_hr_zones_payload
+from dash_backend.models import AuthenticatedUser, UserSettings, UserSettingsUpdate
 from dash_backend.strava.strava_client import athlete_login, get_activity_summaries
 from dash_database.crud import (
     athlete_exists,
@@ -21,6 +24,14 @@ from dash_database.session import SessionLocal
 
 router = APIRouter(prefix="/user", tags=["user"])
 logger = logging.getLogger(__name__)
+
+
+def _normalize_birthday(value: date | datetime | None) -> date | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    return value
 
 
 def get_db():
@@ -79,6 +90,12 @@ def user_login(
     athlete, user = athlete_login(access_code)
     if not athlete_exists(session, athlete.id):
         write_athlete(session, User.model_validate(athlete.model_dump()))
+    else:
+        db_athlete = get_athlete(session, athlete.id)
+        birth_day = _normalize_birthday(getattr(athlete, "birthday", None))
+        if birth_day is not None:
+            db_athlete.birthday = birth_day
+            update_athlete(session, db_athlete)
     background_tasks.add_task(update_activities, user)
     logger.info("logged in successfully")
 
@@ -105,30 +122,48 @@ def get_user(
         athlete_id=user.athlete_id,
         start_date=athlete.start_date,
         end_date=athlete.end_date,
+        birthday=_normalize_birthday(athlete.birthday),
+        max_hr_override=athlete.max_hr_override,
+        hr_zone_highlight=athlete.hr_zone_highlight,
+    )
+
+
+@router.get("/hr-zones", response_model=HrZonesPayload)
+def get_hr_zones(
+    user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+    session: Session = Depends(get_db),
+) -> HrZonesPayload:
+    cfg = ApiConfig()
+    athlete = get_athlete(session, user.athlete_id)
+    return build_hr_zones_payload(
+        birthday=_normalize_birthday(athlete.birthday),
+        max_hr_override=athlete.max_hr_override,
+        config_default=cfg.max_heartrate,
     )
 
 
 @router.post("/user-settings")
 def set_user(
-    user_settings: UserSettings,
+    user_settings: UserSettingsUpdate,
     user: Annotated[AuthenticatedUser, Depends(get_current_user)],
     session: Session = Depends(get_db),
 ):
-    """Updates the logged in user's settings in the database.
-
-    :param user_settings: An instance of UserSettings containing the user's ID, start date, and end date.
-    """
+    """Updates the logged in user's settings. Only fields present in the body are applied."""
+    data = user_settings.model_dump(exclude_unset=True)
     athlete = get_athlete(session, user.athlete_id)
-    athlete.start_date = user_settings.start_date
-    athlete.end_date = user_settings.end_date
+    for key in ("start_date", "end_date", "birthday", "max_hr_override", "hr_zone_highlight"):
+        if key in data:
+            setattr(athlete, key, data[key])
     update_athlete(session, athlete)
-    logger.info(athlete.end_date)
-    delete_activities(session, user.athlete_id)
-    activities = get_activity_summaries(
-        user, start_date=athlete.start_date, end_date=athlete.end_date
-    )
-    logger.info(activities[-1])
-    write_activities(session, activities)
+    if "start_date" in data or "end_date" in data:
+        logger.info(athlete.end_date)
+        delete_activities(session, user.athlete_id)
+        activities = get_activity_summaries(
+            user, start_date=athlete.start_date, end_date=athlete.end_date
+        )
+        if activities:
+            logger.info(activities[-1])
+        write_activities(session, activities)
 
 @router.post("/logout")
 def logout(response: Response) -> dict:

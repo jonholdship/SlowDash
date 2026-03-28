@@ -1,6 +1,5 @@
-from datetime import datetime
-from pydantic import BaseModel
-from typing import Optional
+from datetime import date, datetime
+from pydantic import BaseModel, field_validator
 
 
 class TokenResponse(BaseModel):
@@ -19,13 +18,29 @@ class UserSettings(BaseModel):
             datetime: lambda v: v.date().isoformat(),
         }
 
-    start_date: datetime
-    end_date: Optional[datetime]
+    athlete_id: int
+    start_date: datetime | None
+    end_date: datetime | None
+    birthday: date | None = None
+    max_hr_override: float | None = None
+    hr_zone_highlight: int | None = None
 
-    # @field_serializer("start_date")
-    # @field_serializer("end_date")
-    # def serialize_date(self, dt: datetime, _info):
-    #     return dt.date()
+
+class UserSettingsUpdate(BaseModel):
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+    birthday: date | None = None
+    max_hr_override: float | None = None
+    hr_zone_highlight: int | None = None
+
+    @field_validator("hr_zone_highlight")
+    @classmethod
+    def zone_highlight_range(cls, v: int | None) -> int | None:
+        if v is None:
+            return None
+        if v < 1 or v > 5:
+            raise ValueError("hr_zone_highlight must be between 1 and 5")
+        return v
 
 
 class HeroStats(BaseModel):

@@ -1,4 +1,4 @@
-from datetime import time, datetime, timedelta
+from datetime import time, datetime, date, timedelta
 from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Any, Self
 from stravalib import unit_helper
@@ -23,6 +23,18 @@ class User(BaseModel):
     start_date: datetime = Field(default_factory=past_date)
     end_date: datetime = Field(default_factory=future_date)
     username: str | None
+    birthday: date | None = None
+    max_hr_override: float | None = None
+    hr_zone_highlight: int | None = None
+
+    @field_validator("birthday", mode="before")
+    @classmethod
+    def birthday_to_date(cls, v: Any) -> date | None:
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v.date()
+        return v
 
 
 class Activity(BaseModel):

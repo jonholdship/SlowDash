@@ -10,12 +10,37 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Unstable_Grid2';
-import { setUserSettings } from '@/api/api-call';
+import { AuthError, getUserSettings, setUserSettings } from '@/api/api-call';
+
+function toDateInputValue(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toISOString().slice(0, 10);
+}
 
 export function DateRangeForm(): React.JSX.Element {
   const [startDate, setStartDate] = React.useState<string>('');
   const [endDate, setEndDate] = React.useState<string>('');
   const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const s = await getUserSettings();
+        if (cancelled) return;
+        setStartDate(toDateInputValue(s.start_date));
+        setEndDate(toDateInputValue(s.end_date));
+      } catch (e) {
+        if (e instanceof AuthError) return;
+        console.error(e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

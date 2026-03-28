@@ -7,9 +7,11 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     BigInteger,
+    SmallInteger,
     String,
     Float,
     DateTime,
+    Date,
     Time,
 )
 from sqlalchemy.orm import relationship
@@ -26,6 +28,9 @@ class User(Base):
     username = Column(String)
     start_date = Column(DateTime, nullable=True)
     end_date = Column(DateTime, nullable=True)
+    birthday = Column(Date, nullable=True)
+    max_hr_override = Column(Float, nullable=True)
+    hr_zone_highlight = Column(SmallInteger, nullable=True)
     activities = relationship("Activity", back_populates="user")
 
 

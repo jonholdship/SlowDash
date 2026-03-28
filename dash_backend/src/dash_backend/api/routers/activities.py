@@ -11,12 +11,7 @@ from typing import Annotated
 from dash_backend.api.auth import get_current_user, set_auth_cookie
 from dash_backend.content.stats import create_training_stats
 from dash_backend.content.plots import training_summaries
-from dash_backend.models import (
-    UserSettings,
-    HeroStats,
-    AuthenticatedUser,
-    TokenResponse,
-)
+from dash_backend.models import HeroStats, AuthenticatedUser, TokenResponse
 from dash_database.session import SessionLocal
 from dash_backend.strava.strava_client import (
     athlete_login,

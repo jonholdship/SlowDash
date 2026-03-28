@@ -6,6 +6,9 @@ alwaysApply: false
 
 # Python
 
+## UV
+Use uv for package management and for running python commands.
+
 ## Type hints (3.12 style)
 
 Use built-in generics and modern syntax. Do **not** import capitalized aliases from `typing` for containers.

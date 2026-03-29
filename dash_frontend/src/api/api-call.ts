@@ -85,6 +85,23 @@ export async function getRuns(): Promise<Run[]> {
 	return normalized;
 }
 
+export async function syncActivities(): Promise<void> {
+	const base = ensureApiBaseUrl();
+	const url = new URL('user/sync-activities', base);
+	const response = await fetch(url.toString(), {
+		method: 'POST',
+		credentials: 'include',
+	});
+
+	if (response.status === 401) {
+		throw new AuthError();
+	}
+
+	if (!response.ok) {
+		throw new Error(`Sync activities failed: ${response.statusText}`);
+	}
+}
+
 export async function setUserSettings(userSettings: UserSettingsUpdate): Promise<void> {
 	const base = ensureApiBaseUrl();
 	const url = new URL('user/user-settings', base);

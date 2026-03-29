@@ -13,7 +13,7 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { AuthError, getRuns } from '@/api/api-call';
+import { AuthError, getRuns, syncActivities } from '@/api/api-call';
 import { RunDetail } from '@/components/dashboard/runs/run-detail';
 import { ArrowsClockwise as SyncIcon } from '@phosphor-icons/react/dist/ssr/ArrowsClockwise';
 
@@ -37,13 +37,6 @@ export default function RunsTableWrapper(): React.JSX.Element {
   const [runs, setRuns] = React.useState<Run[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
-  // Handle sync button click - refresh data
-  const handleSync = React.useCallback(() => {
-    setIsLoading(true);
-    fetchRuns();
-  }, []);
-
-  // Function to fetch runs with authentication
   const fetchRuns = React.useCallback(async () => {
     try {
       const runsData = await getRuns();
@@ -58,6 +51,21 @@ export default function RunsTableWrapper(): React.JSX.Element {
       setIsLoading(false);
     }
   }, []);
+
+  const handleSync = React.useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await syncActivities();
+    } catch (error) {
+      if (error instanceof AuthError) {
+        setRuns([]);
+        setIsLoading(false);
+        return;
+      }
+      console.error('Sync failed:', error);
+    }
+    await fetchRuns();
+  }, [fetchRuns]);
 
   // Fetch data on component mount
   React.useEffect(() => {
@@ -83,7 +91,10 @@ export default function RunsTableWrapper(): React.JSX.Element {
           <Button 
             startIcon={<SyncIcon fontSize="var(--icon-fontSize-md)" />} 
             variant="contained"
-            onClick={handleSync}
+            disabled={isLoading}
+            onClick={() => {
+              void handleSync();
+            }}
           >
             Sync
           </Button>

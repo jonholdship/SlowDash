@@ -75,6 +75,18 @@ def update_activities(user: AuthenticatedUser):
         session.close()
 
 
+@router.post("/sync-activities")
+def post_sync_activities(
+    user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+) -> dict:
+    """
+    Pull new activities from Strava and persist them. Runs synchronously so the
+    client can refetch data after the response.
+    """
+    update_activities(user)
+    return {"ok": True}
+
+
 @router.get("/login")
 def user_login(
     access_code: str,

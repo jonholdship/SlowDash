@@ -9,13 +9,14 @@ from pydantic import BaseModel
 
 HrZoneSource = Literal["override", "formula", "config_default"]
 
-# Five zones: Z1 50–60%, … Z5 90–100% of max HR
+# Five zones: from runners world
+#https://www.runnersworld.com/uk/training/beginners/a760176/heart-rate-training-the-basics/
 _ZONE_FRACTIONS: list[tuple[int, str, float, float]] = [
-    (1, "Z1", 0.50, 0.60),
+    (1, "Z1", 0.20, 0.60),
     (2, "Z2", 0.60, 0.70),
     (3, "Z3", 0.70, 0.80),
-    (4, "Z4", 0.80, 0.90),
-    (5, "Z5", 0.90, 1.00),
+    (4, "Z4", 0.80, 0.93),
+    (5, "Z5", 0.94, 1.00),
 ]
 
 

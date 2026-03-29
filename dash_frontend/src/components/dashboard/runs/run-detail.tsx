@@ -11,9 +11,10 @@ import type { SxProps } from '@mui/material/styles';
 import type { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
 import Box from '@mui/material/Box';
-import { AuthError, getActivity } from '@/api/api-call';
+import { AuthError, getActivity, getHrZones, getUserSettings } from '@/api/api-call';
 import { Chart } from '@/components/core/chart';
 import type { ActivityResponse } from '@/types/activity';
+import type { HrZoneBand } from '@/types/hr-zones';
 
 const ActivityMap = dynamic<{ polyline: string | null }>(
   () => import('./activity-map').then((m) => m.ActivityMap),
@@ -39,11 +40,13 @@ export function RunDetail({ runId }: RunDetailProps) {
   const [data, setData] = React.useState<ActivityResponse | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [hrZoneBand, setHrZoneBand] = React.useState<HrZoneBand | null>(null);
 
   React.useEffect(() => {
     if (runId == null) {
       setData(null);
       setError(null);
+      setHrZoneBand(null);
       return;
     }
     setLoading(true);
@@ -57,9 +60,37 @@ export function RunDetail({ runId }: RunDetailProps) {
           setError(err instanceof Error ? err.message : 'Failed to load activity');
         }
         setData(null);
+        setHrZoneBand(null);
       })
       .finally(() => setLoading(false));
   }, [runId]);
+
+  React.useEffect(() => {
+    if (!data) {
+      setHrZoneBand(null);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [settings, zones] = await Promise.all([getUserSettings(), getHrZones()]);
+        if (cancelled) return;
+        const highlight = settings.hr_zone_highlight ?? 3;
+        const zone = zones.zones.find((z) => z.id === highlight) ?? null;
+        setHrZoneBand(zone);
+      } catch (err) {
+        if (err instanceof AuthError) {
+          setHrZoneBand(null);
+          return;
+        }
+        console.error('Failed to load HR zone highlight', err);
+        setHrZoneBand(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [data]);
 
   if (runId == null) {
     return (
@@ -137,7 +168,7 @@ export function RunDetail({ runId }: RunDetailProps) {
         <StreamPlot title="Pace (min/km)" seriesName="Pace" data={paceData} />
       </Grid>
       <Grid xs={12} md={6}>
-        <StreamPlot title="Heart rate (bpm)" seriesName="HR" data={hrData} />
+        <StreamPlot title="Heart rate (bpm)" seriesName="HR" data={hrData} hrZoneBand={hrZoneBand} />
       </Grid>
       {/* Bottom row: altitude, distance */}
       <Grid xs={12} md={6}>
@@ -154,11 +185,12 @@ interface StreamPlotProps {
   title: string;
   seriesName: string;
   data: { x: number; y: number }[];
+  hrZoneBand?: HrZoneBand | null;
   sx?: SxProps;
 }
 
-function StreamPlot({ title, seriesName, data, sx }: StreamPlotProps): React.JSX.Element {
-  const chartOptions = useStreamChartOptions();
+function StreamPlot({ title, seriesName, data, hrZoneBand, sx }: StreamPlotProps): React.JSX.Element {
+  const chartOptions = useStreamChartOptions(hrZoneBand);
   const series = [{ name: seriesName, data }];
   return (
     <Card sx={sx}>
@@ -176,9 +208,27 @@ function StreamPlot({ title, seriesName, data, sx }: StreamPlotProps): React.JSX
   );
 }
 
-function useStreamChartOptions(): ApexOptions {
+function useStreamChartOptions(hrZoneBand?: HrZoneBand | null): ApexOptions {
   const theme = useTheme();
+
+  // Never set `annotations: undefined` — ApexCharts' merge wipes defaults and breaks image/text annos.
   return {
+    ...(hrZoneBand != null
+      ? {
+          annotations: {
+            yaxis: [
+              {
+                y: hrZoneBand.min_bpm,
+                y2: hrZoneBand.max_bpm,
+                fillColor: alpha(theme.palette.primary.main, 0.14),
+                borderColor: alpha(theme.palette.primary.main, 0.4),
+                borderWidth: 1,
+                opacity: 1,
+              },
+            ],
+          },
+        }
+      : {}),
     chart: { background: 'transparent', toolbar: { show: false } },
     colors: [theme.palette.primary.main, alpha(theme.palette.primary.main, 0.25)],
     dataLabels: { enabled: false },
